@@ -1,0 +1,23 @@
+{
+  "token": "",
+  "donoId": "",
+  "canalVozId": "",
+  "autoCall": false,
+  "autoRoleId": "",
+  "autoRole": false,
+  "antiLink": false,
+  "blockmessage": [],
+  "imageOnlyChannels": [],
+  "contador": {
+    "canalId": "",
+    "ultimoNumero": 0
+  },
+  "canalSugestao": "",
+  "canalVozPrincipal": "",
+  "status": {
+    "status": "online",
+    "activityType": 0,
+    "description": "ZikSupport"
+  },
+  "verificationRoleId": ""
+}
