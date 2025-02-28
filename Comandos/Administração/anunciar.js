@@ -68,9 +68,9 @@ client.on("interactionCreate", async (interaction) => {
     const canalId = interaction.fields.getTextInputValue("canalInput");
 
     const canal = interaction.guild.channels.cache.get(canalId);
-    if (!canal || canal.type !== Discord.ChannelType.GuildText) {
+    if (!canal || (canal.type !== Discord.ChannelType.GuildText && canal.type !== Discord.ChannelType.GuildAnnouncement)) {
       return interaction.followUp({
-        content: "❌ Canal de texto inválido. Verifique o ID do canal.",
+        content: "❌ Canal inválido. Verifique o ID do canal e certifique-se de que é um canal de texto ou anúncio.",
         ephemeral: true,
       });
     }
