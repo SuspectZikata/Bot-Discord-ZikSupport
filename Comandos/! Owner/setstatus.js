@@ -29,6 +29,7 @@ module.exports = {
     updateBotStatus,
     name: "setstatus",
     description: "Configure o status do bot.",
+    defaultMemberPermissions: PermissionFlagsBits.Administrator,
     options: [],
 
     run: async (client, interaction) => {
