@@ -1,14 +1,14 @@
 const Discord = require('discord.js');
-const fetch = require('node-fetch');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 module.exports = {
     name: "kiss",
-    description: "Beije um membro.",
+    description: "Beije um 'Amigo'.",
     type: Discord.ApplicationCommandType.ChatInput,
     options: [
         {
             name: "membro",
-            description: "Mencione um usuário",
+            description: "Mencione ele(a).",
             type: Discord.ApplicationCommandOptionType.User,
             required: true,
         }
@@ -23,7 +23,7 @@ module.exports = {
                 return data.results[0].media[0].gif.url;
             } catch (error) {
                 console.error("Erro ao buscar GIF:", error);
-                return "https://imgur.com/II1bakc.gif"; // Fallback
+                return "https://imgur.com/lD2V6kG"; // Fallback
             }
         }
         

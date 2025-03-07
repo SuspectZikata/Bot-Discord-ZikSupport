@@ -1,10 +1,12 @@
 const Discord = require("discord.js");
+const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 const client = require("../../index"); // Importa o client corretamente
 
 module.exports = {
   name: "dm",
   description: "Envie uma mensagem no privado de um usuário.",
   type: Discord.ApplicationCommandType.ChatInput,
+  defaultMemberPermissions: PermissionFlagsBits.ManageGuild,
   options: [
     {
       name: "usuário",
@@ -15,12 +17,6 @@ module.exports = {
   ],
 
   run: async (client, interaction) => {
-    if (!interaction.member.permissions.has(Discord.PermissionFlagsBits.Administrator)) {
-      return interaction.reply({ 
-        content: "❌ Você não possui permissão para utilizar este comando!", 
-        ephemeral: true 
-      });
-    }
 
     const user = interaction.options.getUser("usuário");
 
@@ -48,7 +44,7 @@ client.on("interactionCreate", async (interaction) => {
   if (!interaction.isModalSubmit()) return;
   if (!interaction.customId.startsWith("dmModal_")) return;
 
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   try {
     const [, senderId, userId] = interaction.customId.split("_");
@@ -58,7 +54,7 @@ client.on("interactionCreate", async (interaction) => {
     if (!user) {
       return interaction.followUp({
         content: "❌ O usuário selecionado não foi encontrado.",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -75,13 +71,13 @@ client.on("interactionCreate", async (interaction) => {
       .setColor("Green")
       .setDescription(`✅ Olá ${sender.user}, a mensagem foi enviada para ${user} com sucesso!`);
 
-    await interaction.followUp({ embeds: [confirmEmbed], ephemeral: true });
+    await interaction.followUp({ embeds: [confirmEmbed], flags: MessageFlags.Ephemeral });
 
   } catch (error) {
     const errorEmbed = new Discord.EmbedBuilder()
       .setColor("Red")
       .setDescription(`❌ Olá ${interaction.user}, a mensagem **não** foi enviada para ${user}, pois o usuário está com a DM fechada!`);
 
-    await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+    await interaction.followUp({ embeds: [errorEmbed], flags: MessageFlags.Ephemeral });
   }
 });

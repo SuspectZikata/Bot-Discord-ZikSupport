@@ -1,14 +1,14 @@
 const Discord = require('discord.js');
-const fetch = require('node-fetch');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 module.exports = {
     name: "hug",
-    description: "Abrace um membro.",
+    description: "Abrace um Amigo(a).",
     type: Discord.ApplicationCommandType.ChatInput,
     options: [
         {
             name: "membro",
-            description: "Mencione um membro.",
+            description: "Mencione ele(a).",
             type: Discord.ApplicationCommandOptionType.User,
             required: true,
         }

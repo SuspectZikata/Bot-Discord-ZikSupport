@@ -1,9 +1,11 @@
 const Discord = require("discord.js");
+const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 
 module.exports = {
   name: "setnick", // Coloque o nome do comando
   description: "Configura o nickname do usuário no servidor.", // Coloque a descrição do comando
   type: Discord.ApplicationCommandType.ChatInput,
+  defaultMemberPermissions: PermissionFlagsBits.ManageNicknames,
   options: [
     {
       name: "membro",
@@ -20,9 +22,7 @@ module.exports = {
   ],
 
   run: async (client, interaction) => {
-    if (!interaction.member.permissions.has(Discord.PermissionFlagsBits.ManageNicknames)) {
-      interaction.reply({ content: `Você não possui permissão para utilizar este comando!`, ephemeral: true });
-    } else {
+
       const user = interaction.options.getUser("membro");
       const membro = interaction.guild.members.cache.get(user.id);
       const nick = interaction.options.getString("nick");
@@ -31,7 +31,7 @@ module.exports = {
         let embed = new Discord.EmbedBuilder()
           .setColor("Red")
           .setDescription(`O nick digitado possui mais de 32 caracteres.`);
-        interaction.reply({ embeds: [embed], ephemeral: true });
+        interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         return;
       }
 
@@ -46,8 +46,7 @@ module.exports = {
           let embed = new Discord.EmbedBuilder()
             .setColor("Red")
             .setDescription(`Ocorreu um erro ao tentar alterar o nickname. Verifique se eu tenho as permissões necessárias e se o membro não tem um cargo superior ao meu.`);
-          interaction.reply({ embeds: [embed], ephemeral: true });
+          interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         });
-    }
   }
 };

@@ -104,7 +104,7 @@ module.exports = {
     const message = await interaction.reply({ 
       embeds: [embed_painel], 
       components: [painel], 
-      ephemeral: true 
+      flags: MessageFlags.Ephemeral 
     });
 
     const collector = interaction.channel.createMessageComponentCollector({
@@ -116,7 +116,7 @@ module.exports = {
       if (i.user.id !== interaction.user.id) {
         return i.reply({ 
           content: "Você não pode interagir com este menu!", 
-          ephemeral: true 
+          flags: MessageFlags.Ephemeral 
         });
       }
 
@@ -125,7 +125,7 @@ module.exports = {
       if (value === "adm" && !interaction.member.permissions.has(Discord.PermissionFlagsBits.Administrator)) {
         return i.reply({ 
           content: "Você precisa ser administrador para ver os comandos de administração!", 
-          ephemeral: true 
+          flags: MessageFlags.Ephemeral 
         });
       }
 

@@ -1,69 +1,51 @@
-const Discord = require("discord.js")
+const Discord = require("discord.js");
 
 module.exports = {
-  name: "userinfo", // Coloque o nome do comando
-  description: "Veja informações de um usuário.", // Coloque a descrição do comando
+  name: "userinfo", // Nome do comando
+  description: "Veja informações de um usuário.", // Descrição do comando
   type: Discord.ApplicationCommandType.ChatInput,
   options: [
     {
-        name: "usuário",
-        description: "Mencione um usuário.",
-        type: Discord.ApplicationCommandOptionType.User,
-        required: true,
-    }
-],
+      name: "usuário",
+      description: "Mencione um usuário.",
+      type: Discord.ApplicationCommandOptionType.User,
+      required: true,
+    },
+  ],
 
   run: async (client, interaction) => {
+    const user = interaction.options.getUser("usuário");
+    const { createdAt, id, tag, bot, username } = user;
 
-    let user = interaction.options.getUser("usuário");
-    let data_conta = user.createdAt.toLocaleString();
-    let id = user.id;
-    let tag = user.tag;
-    let is_bot = user.bot;
+    // Formatação da data de criação da conta
+    const dataConta = createdAt.toLocaleString("pt-br");
 
-    if (is_bot === true) is_bot = "Sim";
-    if (is_bot === false) is_bot = "Não";
+    // Verifica se o usuário é um bot
+    const isBot = bot ? "Sim" : "Não";
 
-    let embed = new Discord.EmbedBuilder()
-    .setColor("Random")
-    .setAuthor({ name: user.username, iconURL: user.displayAvatarURL({ dynamic: true }) })
-    .setThumbnail(user.displayAvatarURL({ dynamic: true }))
-    .setTitle("Informações do Usuário:")
-    .addFields(
-        {
-            name: `🎇 Tag:`,
-            value: `\`${tag}\`.`,
-            inline: false
-        },
-        {
-            name: `🆔 Id:`,
-            value: `\`${id}\`.`,
-            inline: false
-        },
-        {
-            name: `📅 Criação da conta:`,
-            value: `\`${data_conta}\`.`,
-            inline: false
-        },
-        {
-            name: `🤖 É um bot?`,
-            value: `\`${is_bot}\`.`,
-            inline: false
-        }
-    );
+    // Criação do embed
+    const embed = new Discord.EmbedBuilder()
+      .setColor("Random")
+      .setAuthor({ name: username, iconURL: user.displayAvatarURL({ dynamic: true }) })
+      .setThumbnail(user.displayAvatarURL({ dynamic: true }))
+      .setTitle("Informações do Usuário:")
+      .addFields(
+        { name: "🎇 Tag:", value: `\`${tag}\``, inline: false },
+        { name: "🆔 ID:", value: `\`${id}\``, inline: false },
+        { name: "📅 Criação da conta:", value: `\`${dataConta}\``, inline: false },
+        { name: "🤖 É um bot?", value: `\`${isBot}\``, inline: false }
+      );
 
-    let botao = new Discord.ActionRowBuilder().addComponents(
-        new Discord.ButtonBuilder()
+    // Botão com link para o avatar do usuário
+    const botao = new Discord.ActionRowBuilder().addComponents(
+      new Discord.ButtonBuilder()
         .setURL(user.displayAvatarURL({ dynamic: true }))
         .setEmoji("📎")
         .setStyle(Discord.ButtonStyle.Link)
-        .setLabel(`Avatar de ${user.username}.`)
-        
-    )
+        .setLabel(`Avatar de ${username}`)
+    );
 
-    interaction.reply({ embeds: [embed], components: [botao] })
-
-
-    
-  }
-}
+    // Responde com o embed e o botão
+    await interaction.reply({ embeds: [embed], components: [botao] });
+  },
+};

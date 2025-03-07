@@ -1,15 +1,15 @@
-const Discord = require("discord.js")
+const Discord = require("discord.js");
+const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 const transcript = require('discord-html-transcripts') // https://www.npmjs.com/package/discord-html-transcripts
 
 module.exports = {
     name: 'transcript', // Coloque o nome do comando
     description: 'Transcreva todas as mensagens deste canal para um arquivo html.', // Coloque a descrição do comando
     type: Discord.ApplicationCommandType.ChatInput,
+    defaultMemberPermissions: PermissionFlagsBits.Administrator,
 
     run: async (client, interaction) => {
-        if (!interaction.member.permissions.has(Discord.PermissionFlagsBits.Administrator)) {
-            interaction.reply({ content: `Você não possui permissão para utilizar este comando!`, ephemeral: true })
-        } else {
+
         const canalTranscript = interaction.channel // Canal que será feito o transcript
 
         const attachment = await transcript.createTranscript(canalTranscript,
@@ -28,6 +28,6 @@ module.exports = {
 
         interaction.reply({ embeds: [embed], files: [attachment] })
 
-    }}
+    }
     
 }

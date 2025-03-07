@@ -1,10 +1,12 @@
 const fs = require("fs");
 const Discord = require("discord.js");
+const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 const config = require("../../config.json");
 
 module.exports = {
     name: "contador",
     description: "Configura o canal de contagem numérica.",
+    defaultMemberPermissions: PermissionFlagsBits.Administrator,
     options: [
         {
             name: "canal",
@@ -15,9 +17,6 @@ module.exports = {
     ],
 
     run: async (client, interaction) => {
-        if (!interaction.member.permissions.has(Discord.PermissionFlagsBits.Administrator)) {
-            interaction.reply({ content: `Você não possui permissão para utilizar este comando!`, ephemeral: true })
-        } 
 
         const canal = interaction.options.getChannel("canal");
 
@@ -25,7 +24,7 @@ module.exports = {
         if (canal.type !== Discord.ChannelType.GuildText) {
             return interaction.reply({
                 content: "❌ O canal selecionado não é um canal de texto!",
-                ephemeral: true,
+                flags: MessageFlags.Ephemeral,
             });
         }
 
@@ -38,7 +37,7 @@ module.exports = {
 
         await interaction.reply({
             content: `✅ Canal de contagem configurado para ${canal.name}!`,
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
         });
     },
 };

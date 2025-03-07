@@ -16,9 +16,9 @@ Este bot para Discord foi desenvolvido por **SuspectZikata** com o intuito de fo
 - **🔗 antilink** - Remove mensagens contendo links.
 - **📢 anunciar** - Envia um anúncio em um canal especificado.
 - **🛠️ ban** - Bane um usuário do servidor.
-- **🗃\ cargo_botao** - Adiciona/remova cargos via botão.
 - **🧹 clear** - Limpa mensagens no canal.
 - **📨 dm** - Envia uma mensagem privada a um usuário.
+- **🗑  dmclear** - Limpa todas as mensagens do bot com um usuário.
 - **👢 kick** - Expulsa um usuário do servidor.
 - **🔒 lock** - Tranca um canal.
 - **🏃️ say** - Faz o bot enviar uma mensagem.
@@ -59,10 +59,10 @@ Este bot para Discord foi desenvolvido por **SuspectZikata** com o intuito de fo
     "@discordjs/voice": "^0.18.0",
     "better-sqlite3": "^11.8.1",
     "discord-html-transcripts": "^3.2.0",
-    "discord.js": "^14.17.3",
+    "discord.js": "^14.18.0",
     "fs": "^0.0.1-security",
     "ms": "^2.1.3",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^3.3.2"
   }
 }
 ```

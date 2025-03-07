@@ -1,9 +1,11 @@
-const Discord = require("discord.js")
+const Discord = require("discord.js");
+const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 
 module.exports = {
   name: "unban", // Coloque o nome do comando
   description: "Desbanir um usuário.", // Coloque a descrição do comando
   type: Discord.ApplicationCommandType.ChatInput,
+  defaultMemberPermissions: PermissionFlagsBits.Administrator,
   options: [
     {
         name: "user",
@@ -21,9 +23,6 @@ module.exports = {
 
   run: async (client, interaction) => {
 
-    if (!interaction.member.permissions.has(Discord.PermissionFlagsBits.Administrator)) {
-        interaction.reply({ content: `Você não possui permissão para utilizar este comando!`, ephemeral: true })
-    } else {
         let user = interaction.options.getUser("user");
         let motivo = interaction.options.getString("motivo");
         if (!motivo) motivo = "Não definido.";
@@ -41,7 +40,6 @@ module.exports = {
         }).catch(e => {
             interaction.reply({ embeds: [erro] })
         })
-    }
 
   }
 }

@@ -1,10 +1,12 @@
 const Discord = require("discord.js");
+const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 const client = require("../../index"); // Importa o client corretamente
 
 module.exports = {
   name: "kick",
   description: "Expulse um membro do servidor.",
   type: Discord.ApplicationCommandType.ChatInput,
+  defaultMemberPermissions: PermissionFlagsBits.KickMembers,
   options: [
     {
       name: "membro",
@@ -15,12 +17,6 @@ module.exports = {
   ],
 
   run: async (client, interaction) => {
-    if (!interaction.member.permissions.has(Discord.PermissionFlagsBits.KickMembers)) {
-      return interaction.reply({ 
-        content: "❌ Você não possui permissão para utilizar este comando!", 
-        ephemeral: true 
-      });
-    }
 
     const user = interaction.options.getUser("membro");
     const membro = interaction.guild.members.cache.get(user.id);
@@ -28,14 +24,14 @@ module.exports = {
     if (!membro) {
       return interaction.reply({ 
         content: "❌ O membro não foi encontrado no servidor.", 
-        ephemeral: true 
+        flags: MessageFlags.Ephemeral 
       });
     }
 
     if (!membro.kickable) {
       return interaction.reply({
         content: "❌ Eu não tenho permissão para expulsar este membro.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
     }
 
@@ -63,7 +59,7 @@ client.on("interactionCreate", async (interaction) => {
   if (!interaction.isModalSubmit()) return;
   if (!interaction.customId.startsWith("kickModal_")) return;
 
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   try {
     const [, senderId, memberId] = interaction.customId.split("_");
@@ -73,14 +69,14 @@ client.on("interactionCreate", async (interaction) => {
     if (!membro) {
       return interaction.followUp({
         content: "❌ O membro não foi encontrado no servidor.",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
     if (!membro.kickable) {
       return interaction.followUp({
         content: "❌ Eu não tenho permissão para expulsar este membro.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
     }
 
@@ -114,6 +110,6 @@ client.on("interactionCreate", async (interaction) => {
       .setColor("Red")
       .setDescription(`❌ O usuário não pôde ser expulso do servidor! Houve um erro ao executar este comando.`);
 
-    await interaction.followUp({ embeds: [embedErro], ephemeral: true });
+    await interaction.followUp({ embeds: [embedErro], flags: MessageFlags.Ephemeral });
   }
 });

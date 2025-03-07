@@ -1,66 +1,106 @@
 const Discord = require("discord.js");
+const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 
 module.exports = {
   name: "say",
   description: "Faça eu falar",
   type: Discord.ApplicationCommandType.ChatInput,
+  defaultMemberPermissions: PermissionFlagsBits.Administrator,
 
   run: async (client, interaction) => {
-    if (!interaction.member.permissions.has(Discord.PermissionFlagsBits.Administrator)) {
-      return interaction.reply({ content: `Você não possui permissão para utilizar este comando!`, ephemeral: true });
-    }
 
-    const modal = new Discord.ModalBuilder()
-      .setCustomId("sayModal")
-      .setTitle("Enviar Mensagem");
+    // Criação dos botões de seleção
+    const buttons = new Discord.ActionRowBuilder().addComponents(
+      new Discord.ButtonBuilder()
+        .setCustomId('normal')
+        .setLabel('Mensagem Normal')
+        .setStyle(Discord.ButtonStyle.Primary)
+        .setEmoji('📄'),
+      new Discord.ButtonBuilder()
+        .setCustomId('embed')
+        .setLabel('Mensagem Embed')
+        .setStyle(Discord.ButtonStyle.Secondary)
+        .setEmoji('🖼️')
+    );
 
-    const messageTypeInput = new Discord.TextInputBuilder()
-      .setCustomId("messageType")
-      .setLabel("Tipo de Mensagem")
-      .setStyle(Discord.TextInputStyle.Short)
-      .setPlaceholder("normal ou embed")
-      .setRequired(true);
+    await interaction.reply({
+      content: 'Selecione o tipo de mensagem:',
+      components: [buttons],
+      flags: MessageFlags.Ephemeral,
+    });
 
-    const messageInput = new Discord.TextInputBuilder()
-      .setCustomId("message")
-      .setLabel("Mensagem")
-      .setStyle(Discord.TextInputStyle.Paragraph)
-      .setPlaceholder("Digite sua mensagem aqui")
-      .setRequired(true);
+    // Coletor de interações
+    const filter = i => i.user.id === interaction.user.id;
+    const collector = interaction.channel.createMessageComponentCollector({ 
+      filter, 
+      time: 60000 
+    });
 
-    const firstActionRow = new Discord.ActionRowBuilder().setComponents(messageTypeInput);
-    const secondActionRow = new Discord.ActionRowBuilder().setComponents(messageInput);
+    collector.on('collect', async i => {
+      if (i.customId === 'normal' || i.customId === 'embed') {
+        // Cria o modal
+        const modal = new Discord.ModalBuilder()
+          .setCustomId(`sayModal_${i.customId}`)
+          .setTitle("Enviar Mensagem");
 
-    modal.setComponents(firstActionRow, secondActionRow);
+        const messageInput = new Discord.TextInputBuilder()
+          .setCustomId("message")
+          .setLabel("Mensagem")
+          .setStyle(Discord.TextInputStyle.Paragraph)
+          .setPlaceholder("Digite sua mensagem aqui")
+          .setRequired(true);
 
-    await interaction.showModal(modal);
+        const actionRow = new Discord.ActionRowBuilder().addComponents(
+          messageInput
+        );
 
-    const filter = (i) => i.customId === "sayModal" && i.user.id === interaction.user.id;
-    interaction
-      .awaitModalSubmit({ filter, time: 60000 }) // Aguarda a resposta do modal
-      .then(async (interactionModal) => {
-        const messageType = interactionModal.fields.getTextInputValue("messageType").toLowerCase();
-        const message = interactionModal.fields.getTextInputValue("message");
+        modal.setComponents(actionRow);
 
-        if (messageType !== "normal" && messageType !== "embed") {
-          return interactionModal.reply({ content: "Tipo de mensagem inválido. Use 'normal' ou 'embed'.", ephemeral: true });
+        await i.showModal(modal);
+
+        // Aguarda a resposta do modal
+        try {
+          const modalInteraction = await i.awaitModalSubmit({
+            filter: mi => mi.customId === `sayModal_${i.customId}`,
+            time: 60000
+          });
+
+          // Finaliza o collector
+          collector.stop();
+
+          const message = modalInteraction.fields.getTextInputValue("message");
+
+          if (i.customId === 'embed') {
+            const embed = new Discord.EmbedBuilder()
+              .setColor("Blue")
+              .setAuthor({ name: i.user.username, iconURL: i.user.displayAvatarURL({ dynamic: true }) })
+              .setDescription(message);
+
+            if (!modalInteraction.replied) {
+              await modalInteraction.reply({ embeds: [embed] });
+            }
+          } else {
+            if (!modalInteraction.replied) {
+              await modalInteraction.reply({ content: message });
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao processar modal:', error);
+          if (!i.replied) {
+            await i.reply({ content: 'Ocorreu um erro ao processar sua mensagem!', flags: MessageFlags.Ephemeral, });
+          }
+          collector.stop();
         }
+      }
+    });
 
-        await interactionModal.deferUpdate(); // Evita que o modal fique carregando
-
-        if (messageType === "embed") {
-          const embed = new Discord.EmbedBuilder()
-            .setColor("Blue")
-            .setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL({ dynamic: true }) })
-            .setDescription(message);
-
-          await interaction.channel.send({ embeds: [embed] });
-        } else {
-          await interaction.channel.send({ content: message });
-        }
-      })
-      .catch(() => {
-        // Caso o usuário não responda ao modal em 60s, nada acontece
-      });
+    collector.on('end', collected => {
+      if (collected.size === 0) {
+        interaction.editReply({
+          content: 'Tempo esgotado!',
+          components: []
+        });
+      }
+    });
   },
 };

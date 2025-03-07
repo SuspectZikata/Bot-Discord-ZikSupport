@@ -1,9 +1,11 @@
-const Discord = require("discord.js")
+const Discord = require("discord.js");
+const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 
 module.exports = {
   name: "ban", // Coloque o nome do comando
   description: "Banir um usuário.", // Coloque a descrição do comando
   type: Discord.ApplicationCommandType.ChatInput,
+  defaultMemberPermissions: PermissionFlagsBits.BanMembers,
   options: [
     {
         name: "user",
@@ -21,9 +23,6 @@ module.exports = {
 
   run: async (client, interaction) => {
 
-    if (!interaction.member.permissions.has(Discord.PermissionFlagsBits.BanMembers)) {
-        interaction.reply(`Você não possui poermissão para utilizar este comando.`);
-    } else {
         let userr = interaction.options.getUser("user");
         let user = interaction.guild.members.cache.get(userr.id)
         let motivo = interaction.options.getString("motivo");
@@ -42,7 +41,6 @@ module.exports = {
         }).catch(e => {
             interaction.reply({ embeds: [erro] })
         })
-    }
 
   }
 }

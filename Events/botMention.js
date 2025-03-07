@@ -1,6 +1,7 @@
 require('../index');
 
 const Discord = require('discord.js');
+const { MessageFlags } = require('discord.js');
 const client = require('../index');
 
 client.on("messageCreate", async (message) => {
@@ -23,7 +24,7 @@ client.on("messageCreate", async (message) => {
                 });
 
             // Responde com a mensagem em ephemeral
-            await message.reply({ embeds: [embed], ephemeral: true });
+            await message.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 
             // Deleta a menção após 10 segundos
             setTimeout(() => {

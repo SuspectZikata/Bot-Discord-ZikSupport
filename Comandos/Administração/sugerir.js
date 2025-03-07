@@ -1,4 +1,5 @@
 const Discord = require("discord.js");
+const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 const fs = require("fs");
 const path = require("path");
 
@@ -9,13 +10,10 @@ const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
 module.exports = {
     name: "sugerir",
     description: "Mensagem de sugestão.",
+    defaultMemberPermissions: PermissionFlagsBits.Administrator,
     options: [],
 
     run: async (client, interaction, args) => {
-        // Verifica se o usuário é Administrador
-        if (!interaction.member.permissions.has(Discord.PermissionFlagsBits.Administrator)) {
-            return interaction.reply({ content: `Você não possui permissão para utilizar este comando!`, ephemeral: true });
-        }
 
         const botaoPublico = new Discord.ButtonBuilder()
             .setCustomId('sugerir_botao')
@@ -60,7 +58,7 @@ module.exports = {
                 const canalSugestao = client.channels.cache.get(config.canalSugestao);
 
                 if (!canalSugestao) {
-                    return interaction.reply({ content: "Canal de sugestões não encontrado!", ephemeral: true });
+                    return interaction.reply({ content: "Canal de sugestões não encontrado!", flags: MessageFlags.Ephemeral });
                 }
 
                 const embed = new Discord.EmbedBuilder()
@@ -80,7 +78,7 @@ module.exports = {
                     await message.react('👎');
                 });
 
-                await interaction.reply({ content: "Sua sugestão foi enviada com sucesso!", ephemeral: true });
+                await interaction.reply({ content: "Sua sugestão foi enviada com sucesso!", flags: MessageFlags.Ephemeral });
             }
         });
     }

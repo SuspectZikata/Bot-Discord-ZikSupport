@@ -8,7 +8,7 @@ module.exports = {
   run: async (client, interaction) => {
     const sent = await interaction.reply({ 
       content: "📡 Calculando ping...", 
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
       fetchReply: true 
     });
 

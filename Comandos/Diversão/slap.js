@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const fetch = require('node-fetch');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 module.exports = {
     name: "slap",
@@ -8,7 +8,7 @@ module.exports = {
     options: [
         {
             name: "membro",
-            description: "Mencione um membro.",
+            description: "Mencione a pessoa.",
             type: Discord.ApplicationCommandOptionType.User,
             required: true,
         }

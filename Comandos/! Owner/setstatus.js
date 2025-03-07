@@ -1,4 +1,5 @@
 const Discord = require("discord.js");
+const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 const fs = require('fs');
 const config = require('../../config.json');
 
@@ -31,9 +32,6 @@ module.exports = {
     options: [],
 
     run: async (client, interaction) => {
-        if (!interaction.member.permissions.has(Discord.PermissionFlagsBits.Administrator)) {
-            interaction.reply({ content: `Você não possui permissão para utilizar este comando!`, ephemeral: true })
-        } 
 
         // Status options with emojis and descriptions
         const statusOptions = [
@@ -131,7 +129,7 @@ module.exports = {
         const message = await interaction.reply({ 
             embeds: [createEmbed()], 
             components: createComponents(),
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
             fetchReply: true
         });
 
@@ -144,7 +142,7 @@ module.exports = {
             if (i.user.id !== interaction.user.id) {
                 await i.reply({ 
                     content: 'Você não pode usar estes controles.', 
-                    ephemeral: true 
+                    flags: MessageFlags.Ephemeral 
                 });
                 return;
             }
@@ -195,14 +193,14 @@ module.exports = {
                     
                     await i.followUp({ 
                         content: '✅ Configuração salva com sucesso!', 
-                        ephemeral: true 
+                        flags: MessageFlags.Ephemeral 
                     });
                 }
             } catch (error) {
                 console.error('Erro ao processar interação:', error);
                 await i.followUp({
                     content: '❌ Ocorreu um erro ao processar sua solicitação.',
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 }).catch(console.error);
             }
         });
@@ -226,7 +224,7 @@ module.exports = {
                 console.error('Erro ao processar modal:', error);
                 await modalInteraction.followUp({
                     content: '❌ Ocorreu um erro ao atualizar a descrição.',
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 }).catch(console.error);
             }
         };

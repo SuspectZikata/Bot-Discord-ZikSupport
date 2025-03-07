@@ -1,6 +1,7 @@
 require('../index');
 
 const Discord = require('discord.js');
+const { MessageFlags } = require('discord.js');
 const client = require('../index');
 const fs = require('fs');
 const path = require('path');
@@ -17,7 +18,7 @@ client.on("interactionCreate", async (interaction) => {
             if (!role) return;
 
             interaction.member.roles.add(role.id);
-            interaction.reply({ content: `Olá **${interaction.user.username}**, você foi verificado!`, ephemeral: true });
+            interaction.reply({ content: `Olá **${interaction.user.username}**, você foi verificado!`, flags: MessageFlags.Ephemeral });
         }
     }
 });

@@ -1,19 +1,15 @@
 const Discord = require("discord.js");
+const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 const client = require("../../index"); // Importa o client corretamente
 
 module.exports = {
   name: "anunciar",
-  description: "Anuncie algo em uma embed usando um formulário.",
+  description: "Anuncie algo em uma embed simples.",
   type: Discord.ApplicationCommandType.ChatInput,
+  defaultMemberPermissions: PermissionFlagsBits.Administrator,
   options: [],
 
   run: async (client, interaction) => {
-    if (!interaction.member.permissions.has(Discord.PermissionFlagsBits.ManageGuild)) {
-      return interaction.reply({
-        content: "❌ Você não possui permissão para utilizar este comando!",
-        ephemeral: true,
-      });
-    }
 
     const modal = new Discord.ModalBuilder()
       .setCustomId(`anunciarModal_${interaction.user.id}`)
@@ -59,7 +55,7 @@ client.on("interactionCreate", async (interaction) => {
   if (!interaction.isModalSubmit()) return;
   if (!interaction.customId.startsWith("anunciarModal_")) return;
 
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   try {
     const titulo = interaction.fields.getTextInputValue("tituloInput");
@@ -71,7 +67,7 @@ client.on("interactionCreate", async (interaction) => {
     if (!canal || (canal.type !== Discord.ChannelType.GuildText && canal.type !== Discord.ChannelType.GuildAnnouncement)) {
       return interaction.followUp({
         content: "❌ Canal inválido. Verifique o ID do canal e certifique-se de que é um canal de texto ou anúncio.",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -93,14 +89,14 @@ client.on("interactionCreate", async (interaction) => {
     await canal.send({ embeds: [embed] });
     interaction.followUp({
       content: `✅ Anúncio enviado com sucesso em ${canal}.`,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
 
   } catch (error) {
     console.error("Erro ao processar o anúncio:", error);
     interaction.followUp({
       content: `❌ Erro ao enviar o anúncio: ${error.message}`,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 });

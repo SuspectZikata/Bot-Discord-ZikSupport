@@ -1,16 +1,15 @@
 const fs = require("fs");
 const Discord = require("discord.js");
+const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 const config = require("../../config.json");
 
 module.exports = {
     name: "configbot",
     description: "Configure as opções do bot.",
     options: [],
+    defaultMemberPermissions: PermissionFlagsBits.Administrator,
 
     run: async (client, interaction) => {
-        if (!interaction.member.permissions.has(Discord.PermissionFlagsBits.Administrator)) {
-                interaction.reply({ content: `Você não possui permissão para utilizar este comando!`, ephemeral: true })
-            } 
 
         const botaoCanais = new Discord.ButtonBuilder()
             .setCustomId("config_canais")
@@ -34,7 +33,7 @@ module.exports = {
             .setTitle("Configuração do Bot")
             .setDescription("Selecione uma categoria de configuração abaixo.");
 
-        await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
+        await interaction.reply({ embeds: [embed], components: [row], flags: MessageFlags.Ephemeral });
     }
 };
 
@@ -161,7 +160,7 @@ module.exports.handleInteractions = (client) => {
             await interaction.update({ embeds: [embed], components: [row] });
             await interaction.followUp({ 
                 content: `O AntiLink foi ${config.antiLink ? "ativado" : "desativado"}!`, 
-                ephemeral: true 
+                flags: MessageFlags.Ephemeral 
             });
         }
 
@@ -195,7 +194,7 @@ module.exports.handleInteractions = (client) => {
             if (!canal) {
                 await interaction.followUp({ 
                     content: "❌ O ID fornecido não é um canal válido.", 
-                    ephemeral: true 
+                    flags: MessageFlags.Ephemeral 
                 });
                 return;
             }
@@ -206,7 +205,7 @@ module.exports.handleInteractions = (client) => {
 
             await interaction.followUp({ 
                 content: `✅ Canal de sugestões atualizado para ${canal.name}!`, 
-                ephemeral: true 
+                flags: MessageFlags.Ephemeral 
             });
         }
 
@@ -240,7 +239,7 @@ module.exports.handleInteractions = (client) => {
             if (!canal || canal.type !== Discord.ChannelType.GuildVoice) {
                 await interaction.followUp({ 
                     content: "❌ O ID fornecido não é um canal de voz válido.", 
-                    ephemeral: true 
+                    flags: MessageFlags.Ephemeral 
                 });
                 return;
             }
@@ -251,7 +250,7 @@ module.exports.handleInteractions = (client) => {
 
             await interaction.followUp({ 
                 content: `✅ Canal de voz principal atualizado para ${canal.name}!`, 
-                ephemeral: true 
+                flags: MessageFlags.Ephemeral 
             });
         }
 
@@ -348,7 +347,7 @@ module.exports.handleInteractions = (client) => {
             if (!canal) {
                 await interaction.followUp({ 
                     content: "❌ O ID fornecido não é um canal válido.", 
-                    ephemeral: true 
+                    flags: MessageFlags.Ephemeral 
                 });
                 return;
             }
@@ -362,7 +361,7 @@ module.exports.handleInteractions = (client) => {
             if (config.blockmessage.includes(novoCanalId)) {
                 await interaction.followUp({ 
                     content: "❌ Este canal já está configurado como canal de comando.", 
-                    ephemeral: true 
+                    flags: MessageFlags.Ephemeral 
                 });
                 return;
             }
@@ -375,7 +374,7 @@ module.exports.handleInteractions = (client) => {
             await updateCanaisComandoMenu(interaction);
             await interaction.followUp({ 
                 content: `✅ O canal ${canal.name} foi adicionado aos canais de comando!`, 
-                ephemeral: true 
+                flags: MessageFlags.Ephemeral 
             });
         }
 
@@ -389,7 +388,7 @@ module.exports.handleInteractions = (client) => {
             if (!config.blockmessage || !config.blockmessage.includes(canalId)) {
                 await interaction.followUp({ 
                     content: "❌ Este canal não está configurado como canal de comando.", 
-                    ephemeral: true 
+                    flags: MessageFlags.Ephemeral 
                 });
                 return;
             }
@@ -402,7 +401,7 @@ module.exports.handleInteractions = (client) => {
             await updateCanaisComandoMenu(interaction);
             await interaction.followUp({ 
                 content: `✅ O canal foi removido dos canais de comando!`, 
-                ephemeral: true 
+                flags: MessageFlags.Ephemeral 
             });
         }
 
@@ -417,7 +416,7 @@ module.exports.handleInteractions = (client) => {
             if (!canal) {
                 await interaction.followUp({ 
                     content: "❌ O ID fornecido não é um canal válido.", 
-                    ephemeral: true 
+                    flags: MessageFlags.Ephemeral 
                 });
                 return;
             }
@@ -431,7 +430,7 @@ module.exports.handleInteractions = (client) => {
             if (config.imageOnlyChannels.includes(novoCanalId)) {
                 await interaction.followUp({ 
                     content: "❌ Este canal já está configurado como canal de imagem.", 
-                    ephemeral: true 
+                    flags: MessageFlags.Ephemeral 
                 });
                 return;
             }
@@ -444,7 +443,7 @@ module.exports.handleInteractions = (client) => {
             await updateCanaisImagemMenu(interaction);
             await interaction.followUp({ 
                 content: `✅ O canal ${canal.name} foi adicionado aos canais de imagem!`, 
-                ephemeral: true 
+                flags: MessageFlags.Ephemeral 
             });
         }
 
@@ -458,7 +457,7 @@ module.exports.handleInteractions = (client) => {
             if (!config.imageOnlyChannels || !config.imageOnlyChannels.includes(canalId)) {
                 await interaction.followUp({ 
                     content: "❌ Este canal não está configurado como canal de imagem.", 
-                    ephemeral: true 
+                    flags: MessageFlags.Ephemeral 
                 });
                 return;
             }
@@ -471,7 +470,7 @@ module.exports.handleInteractions = (client) => {
             await updateCanaisImagemMenu(interaction);
             await interaction.followUp({ 
                 content: `✅ O canal foi removido dos canais de imagem!`, 
-                ephemeral: true 
+                flags: MessageFlags.Ephemeral 
             });
         }
 
@@ -493,7 +492,7 @@ module.exports.handleInteractions = (client) => {
             await updateAutoRoleMenu(interaction);
             await interaction.followUp({ 
                 content: `O AutoRole foi **${config.autoRole ? "ativado" : "desativado"}**!`, 
-                ephemeral: true 
+                flags: MessageFlags.Ephemeral 
             });
         }
 
@@ -527,7 +526,7 @@ module.exports.handleInteractions = (client) => {
             if (!cargo) {
                 await interaction.followUp({ 
                     content: "❌ O ID fornecido não é um cargo válido.", 
-                    ephemeral: true 
+                    flags: MessageFlags.Ephemeral 
                 });
                 return;
             }
@@ -540,7 +539,7 @@ module.exports.handleInteractions = (client) => {
             await updateAutoRoleMenu(interaction);
             await interaction.followUp({ 
                 content: `✅ O cargo do AutoRole foi atualizado para ${cargo.name}!`, 
-                ephemeral: true 
+                flags: MessageFlags.Ephemeral 
             });
         }
 
@@ -552,7 +551,7 @@ module.exports.handleInteractions = (client) => {
             await updateAutoCallMenu(interaction);
             await interaction.followUp({ 
                 content: `O AutoCall foi **${config.autoCall ? "ativado" : "desativado"}**!`, 
-                ephemeral: true 
+                flags: MessageFlags.Ephemeral 
             });
         }
 
@@ -586,7 +585,7 @@ module.exports.handleInteractions = (client) => {
             if (!canal || canal.type !== Discord.ChannelType.GuildVoice) {
                 await interaction.followUp({ 
                     content: "❌ O ID fornecido não é um canal de voz válido.", 
-                    ephemeral: true 
+                    flags: MessageFlags.Ephemeral 
                 });
                 return;
             }
@@ -599,7 +598,7 @@ module.exports.handleInteractions = (client) => {
             await updateAutoCallMenu(interaction);
             await interaction.followUp({ 
                 content: `✅ O canal de voz foi atualizado para ${canal.name}!`, 
-                ephemeral: true 
+                flags: MessageFlags.Ephemeral 
             });
         }
 

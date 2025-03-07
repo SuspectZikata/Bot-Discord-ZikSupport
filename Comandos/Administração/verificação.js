@@ -1,4 +1,5 @@
 const Discord = require("discord.js");
+const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 const fs = require("fs");
 const path = require("path");
 
@@ -6,6 +7,7 @@ module.exports = {
   name: "verificação", // Coloque o nome do comando
   description: "Ative o sistema de verificação.", // Coloque a descrição do comando
   type: Discord.ApplicationCommandType.ChatInput,
+  defaultMemberPermissions: PermissionFlagsBits.Administrator,
   options: [
     {
         name: "cargo_verificado",
@@ -22,9 +24,7 @@ module.exports = {
   ],
 
   run: async (client, interaction) => {
-    if (!interaction.member.permissions.has(Discord.PermissionFlagsBits.Administrator)) {
-        interaction.reply({ content: `Você não possui permissão para utilizar este comando!`, ephemeral: true });
-    } else {
+
         let canal = interaction.options.getChannel("canal");
         if (!canal) canal = interaction.channel;
 
@@ -57,9 +57,8 @@ module.exports = {
                 .setStyle(Discord.ButtonStyle.Primary)
         );
 
-        interaction.reply({ embeds: [embed_ephemeral], ephemeral: true }).then(() => {
+        interaction.reply({ embeds: [embed_ephemeral], flags: MessageFlags.Ephemeral }).then(() => {
             canal.send({ embeds: [embed_verificacao], components: [botao] });
         });
-    }
   }
 }
