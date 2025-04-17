@@ -4,7 +4,7 @@ const client = require("../../index"); // Importa o client corretamente
 
 module.exports = {
   name: "anunciar",
-  description: "Anuncie algo em uma embed simples.",
+  description: "[ADMIN] Anuncie algo em uma embed simples.",
   type: Discord.ApplicationCommandType.ChatInput,
   defaultMemberPermissions: PermissionFlagsBits.Administrator,
   options: [],

@@ -3,7 +3,7 @@ const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 
 module.exports = {
   name: "lock", // Coloque o nome do comando
-  description: "Bloqueie um canal.", // Coloque a descrição do comando
+  description: "[MOD] Bloqueie um canal.", // Coloque a descrição do comando
   type: Discord.ApplicationCommandType.ChatInput,
   defaultMemberPermissions: PermissionFlagsBits.ManageChannels,
   options: [
@@ -22,13 +22,23 @@ module.exports = {
         const permissaoAtual = canal.permissionOverwrites.cache.get(interaction.guild.id)?.deny.has(PermissionFlagsBits.SendMessages);
         
         if (permissaoAtual) {
-            const msg1 = await interaction.reply({ content: `🔒 O canal ${canal} já está bloqueado!`, fetchReply: true })
+            await interaction.reply({ 
+                content: `🔒 O canal ${canal} já está bloqueado!`
+            })
+
+            const msg1 = await interaction.fetchReply();
+
             setTimeout(() => msg1.delete().catch(() => {}), 5 * 60 * 1000)
             return;
         }
 
         canal.permissionOverwrites.edit(interaction.guild.id, { SendMessages: false }).then( async () => {
-            const msg1 = await interaction.reply({ content: `🔒 O canal de texto ${canal} foi bloqueado!`, fetchReply: true })
+            await interaction.reply({ 
+                content: `🔒 O canal de texto ${canal} foi bloqueado!`
+            })
+
+            const msg1 = await interaction.fetchReply();
+
             setTimeout(() => msg1.delete().catch(() => {}), 5 * 60 * 1000)
             
             if (canal.id !== interaction.channel.id) {

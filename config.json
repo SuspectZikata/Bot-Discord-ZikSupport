@@ -1,13 +1,16 @@
 {
   "token": "",
-  "donoId": "",
   "canalVozId": "",
   "autoCall": false,
   "autoRoleId": "",
-  "autoRole": true,
-  "antiLink": false,
-  "blockmessage": [],
-  "imageOnlyChannels": [],
+  "autoRole": false,
+  "antiLink": true,
+  "blockmessage": [
+    ""
+  ],
+  "imageOnlyChannels": [
+    ""
+  ],
   "contador": {
     "canalId": "",
     "ultimoNumero": 0
@@ -17,7 +20,12 @@
   "status": {
     "status": "online",
     "activityType": 0,
-    "description": "ZikSupport"
+    "description": "Zik"
   },
-  "verificationRoleId": ""
+  "verificationRoleId": "",
+  "boasVindas": {
+    "canalId": "1359656674411151481",
+    "imagemFundo": "https://raw.githubusercontent.com/SuspectZikata/Imagens-ZikBot/refs/heads/main/ZikGuild/BoasVindasGuild.png",
+    "mensagem": "Bem-vindo(a) ao servidor!"
+  }
 }

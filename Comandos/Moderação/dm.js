@@ -4,7 +4,7 @@ const client = require("../../index"); // Importa o client corretamente
 
 module.exports = {
   name: "dm",
-  description: "Envie uma mensagem no privado de um usuário.",
+  description: "[MOD] Envie uma mensagem no privado de um usuário.",
   type: Discord.ApplicationCommandType.ChatInput,
   defaultMemberPermissions: PermissionFlagsBits.ManageGuild,
   options: [

@@ -1,4 +1,3 @@
-const Discord = require('discord.js');
 const client = require('../index');
 const config = require('../config.json');
 
@@ -11,8 +10,13 @@ client.on('messageCreate', async (message) => {
         // Verificar se a mensagem começa com um prefixo de comando (por exemplo, '/')
         if (!message.content.startsWith('/')) {
             try {
-                // Apagar a mensagem original
-                await message.delete();
+                // Apagar a mensagem original com tratamento de erro específico
+                try {
+                    await message.delete();
+                } catch (err) {
+                    if (err.code !== 10008) {
+                    }
+                }
 
                 // Enviar uma mensagem de alerta que será apagada após alguns segundos
                 const warningMessage = await message.channel.send({
@@ -38,8 +42,14 @@ client.on('messageCreate', async (message) => {
         // Verificar se a mensagem contém pelo menos um anexo
         if (message.attachments.size === 0) {
             try {
-                // Apagar a mensagem original
-                await message.delete();
+                // Apagar a mensagem original com tratamento de erro específico
+                try {
+                    await message.delete();
+                } catch (err) {
+                    if (err.code !== 10008) {
+                        console.error('Erro ao deletar a mensagem:', err);
+                    }
+                }
 
                 // Enviar uma mensagem de alerta que será apagada após alguns segundos
                 const warningMessage = await message.channel.send({

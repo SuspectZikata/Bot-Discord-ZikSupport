@@ -5,7 +5,7 @@ const config = require("../../config.json");
 
 module.exports = {
     name: "contador",
-    description: "Configura o canal de contagem numérica.",
+    description: "[ADMIN] Configura o canal de contagem numérica.",
     defaultMemberPermissions: PermissionFlagsBits.Administrator,
     options: [
         {

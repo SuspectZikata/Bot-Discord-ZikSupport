@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 const client = require('../index');
 const config = require('../config.json');
-const updateBotStatus = require('../Comandos/! Owner/setstatus').updateBotStatus;
+const updateBotStatus = require('../Comandos/Administração/setstatus').updateBotStatus;
 
 client.on('ready', async () => {
     console.log(`🔥 Estou online em ${client.user.username}!`);
@@ -28,7 +28,7 @@ client.on('ready', async () => {
             // Define um status padrão caso não haja configuração
             const defaultStatus = {
                 status: 'online',
-                description: 'Estou online!',
+                description: 'Zik',
                 activityType: 0
             };
             

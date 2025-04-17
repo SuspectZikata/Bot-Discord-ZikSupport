@@ -4,7 +4,7 @@ const client = require("../../index"); // Importa o client corretamente
 
 module.exports = {
   name: "kick",
-  description: "Expulse um membro do servidor.",
+  description: "[MOD] Expulse um membro do servidor.",
   type: Discord.ApplicationCommandType.ChatInput,
   defaultMemberPermissions: PermissionFlagsBits.KickMembers,
   options: [
@@ -101,7 +101,7 @@ client.on("interactionCreate", async (interaction) => {
       .setColor("Green")
       .setDescription(`✅ O usuário ${membro.user.tag} foi expulso com sucesso!\n\n> Motivo: \`${motivo}\`.`);
 
-    await interaction.followUp({ embeds: [embed], ephemeral: false });
+    await interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
 
   } catch (error) {
     console.error("Erro ao expulsar membro:", error);

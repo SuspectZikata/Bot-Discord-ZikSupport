@@ -1,51 +1,115 @@
 const Discord = require("discord.js");
+const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 const config = require("./config.json");
+const mongoose = require('mongoose');
+const { connect } = require('./database');
+const Giveaway = require('./models/Giveaway'); // Adicione esta linha
+const { endGiveaway } = require('./utils/giveawayUtils'); // Adicione esta linha
 
-const client = new Discord.Client({
-  intents: [
-    Discord.GatewayIntentBits.Guilds,
-    Discord.GatewayIntentBits.GuildMessages,
-    Discord.GatewayIntentBits.MessageContent,
-    Discord.GatewayIntentBits.GuildMembers,
-    Discord.GatewayIntentBits.GuildVoiceStates,
-  ],
-  partials: [
-    Discord.Partials.User,
-    Discord.Partials.Message,
-    Discord.Partials.Reaction,
-    Discord.Partials.Channel,
-    Discord.Partials.GuildMember,
-  ],
-});
+// Função para verificar sorteios (substitui o import que estava causando erro)
+async function giveawayChecker(client) {
+  try {
+    const activeGiveaways = await Giveaway.find({
+      status: 'active',
+      endTime: { $lte: new Date() }
+    });
 
-module.exports = client;
-
-client.on("interactionCreate", (interaction) => {
-  if (interaction.type === Discord.InteractionType.ApplicationCommand) {
-    const cmd = client.slashCommands.get(interaction.commandName);
-    if (!cmd) return interaction.reply("Error");
-    interaction["member"] = interaction.guild.members.cache.get(interaction.user.id);
-    cmd.run(client, interaction);
+    for (const giveaway of activeGiveaways) {
+      await endGiveaway(client, giveaway);
+    }
+  } catch (error) {
+    console.error('Erro ao verificar sorteios:', error);
   }
-});
+}
 
-// Anti Crash
-process.on("unhandledRejection", (reason, promise) => {
-  console.log(reason + promise);
-});
-process.on("uncaughtException", (error, origin) => {
-  console.log(error + origin);
-});
-process.on("uncaughtExceptionMonitor", (error, origin) => {
-  console.log(error + origin);
-});
+async function startBot() {
+  try {
+    await connect();
+    
+    const client = new Discord.Client({
+      intents: [
+        Discord.GatewayIntentBits.Guilds,
+        Discord.GatewayIntentBits.GuildMessages,
+        Discord.GatewayIntentBits.MessageContent,
+        Discord.GatewayIntentBits.GuildMembers,
+        Discord.GatewayIntentBits.GuildVoiceStates,
+      ],
+      partials: [
+        Discord.Partials.User,
+        Discord.Partials.Message,
+        Discord.Partials.Reaction,
+        Discord.Partials.Channel,
+        Discord.Partials.GuildMember,
+      ],
+    });
 
-client.slashCommands = new Discord.Collection();
+    client.db = mongoose.connection;
+    module.exports = client;
 
-require("./handler")(client);
+    // Evento de interação (incluindo botões de sorteio)
+    client.on("interactionCreate", async (interaction) => {
+      if (interaction.isCommand()) {
+        // Comandos slash
+        const cmd = client.slashCommands.get(interaction.commandName);
+        if (!cmd) return;
+    
+        try {
+          await cmd.run(client, interaction);
+        } catch (error) {
+          console.error("Erro ao executar comando:", error);
+          await interaction.reply({
+            content: "❌ Ocorreu um erro ao executar este comando.",
+            flags: MessageFlags.Ephemeral
+          });
+        }
+      } else if (interaction.isButton()) {
+        // Botões
+        try {
+          const giveawayManager = require('./Events/giveawayManager');
+          await giveawayManager.execute(interaction);
+        } catch (error) {
+          console.error("Erro ao processar botão:", error);
+        }
+      }
+    });
 
-// Carrega o configbot.js e registra os eventos de interação
-const configbot = require("./Comandos/! Owner/configbot.js");
-configbot.handleInteractions(client);
+    // Verificar sorteios a cada minuto
+    const giveawayInterval = setInterval(() => giveawayChecker(client), 60000);
 
-client.login(config.token);
+    // Handlers de erro
+    process.on("unhandledRejection", (error) => {
+      console.error("Unhandled Rejection:", error);
+    });
+
+    process.on("uncaughtException", (error) => {
+      console.error("Uncaught Exception:", error);
+    });
+
+    // Limpar intervalo ao desligar o bot
+    process.on('SIGINT', () => {
+      clearInterval(giveawayInterval);
+      process.exit();
+    });
+
+    // Carregar comandos
+    client.slashCommands = new Discord.Collection();
+    require("./handler")(client);
+
+    // Configurações do bot
+    const configbot = require("./Comandos/! Owner/configbot.js");
+    configbot.handleInteractions(client);
+
+    // Evento ready
+    client.once('ready', () => {
+      console.log(`🔄 Verificando sorteios a cada minuto...`);
+    });
+
+    await client.login(config.token);
+    
+  } catch (error) {
+    console.error('Falha ao iniciar o bot:', error);
+    process.exit(1);
+  }
+}
+
+startBot();

@@ -28,7 +28,7 @@ async function updateBotStatus(client, statusConfig) {
 module.exports = {
     updateBotStatus,
     name: "setstatus",
-    description: "Configure o status do bot.",
+    description: "[ADMIN] Configure o status do bot.",
     defaultMemberPermissions: PermissionFlagsBits.Administrator,
     options: [],
 
@@ -127,12 +127,13 @@ module.exports = {
         }
 
         // Send initial message
-        const message = await interaction.reply({ 
+        await interaction.reply({ 
             embeds: [createEmbed()], 
             components: createComponents(),
-            flags: MessageFlags.Ephemeral,
-            fetchReply: true
+            flags: MessageFlags.Ephemeral
         });
+
+        const message = await interaction.fetchReply();
 
         // Create collector for interactions
         const collector = message.createMessageComponentCollector({ 

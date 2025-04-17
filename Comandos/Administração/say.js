@@ -3,7 +3,7 @@ const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 
 module.exports = {
   name: "say",
-  description: "Faça eu falar",
+  description: "[ADMIN] Faça eu falar",
   type: Discord.ApplicationCommandType.ChatInput,
   defaultMemberPermissions: PermissionFlagsBits.Administrator,
 

@@ -3,7 +3,7 @@ const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 
 module.exports = {
   name: "ban", // Coloque o nome do comando
-  description: "Banir um usuário.", // Coloque a descrição do comando
+  description: "[ADMIN] Banir um usuário.", // Coloque a descrição do comando
   type: Discord.ApplicationCommandType.ChatInput,
   defaultMemberPermissions: PermissionFlagsBits.BanMembers,
   options: [

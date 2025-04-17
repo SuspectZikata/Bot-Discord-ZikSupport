@@ -3,13 +3,22 @@ const Discord = require("discord.js");
 const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 const config = require("../../config.json");
 
+const ADMIN_ID = '406857514639163393';
+
 module.exports = {
     name: "configbot",
-    description: "Configure as opções do bot.",
+    description: "[OWNER] Configure as opções do bot.",
     options: [],
     defaultMemberPermissions: PermissionFlagsBits.Administrator,
 
     run: async (client, interaction) => {
+        // Verifica se é o administrador
+        if (interaction.user.id !== ADMIN_ID) {
+            return interaction.reply({
+                content: '❌ Apenas o desenvolvedor pode usar este comando!',
+                flags: MessageFlags.Ephemeral
+            });
+        }
 
         const botaoCanais = new Discord.ButtonBuilder()
             .setCustomId("config_canais")

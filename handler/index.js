@@ -31,7 +31,6 @@ module.exports = async (client) => {
 
     // Register commands only once
     client.once("ready", async () => {
-        console.log(`Bot connected as ${client.user.tag}`);
         
         // Choose ONE: Either global or per-guild registration
         await client.application.commands.set(SlashsArray); // Global registration

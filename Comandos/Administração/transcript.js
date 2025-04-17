@@ -4,7 +4,7 @@ const transcript = require('discord-html-transcripts') // https://www.npmjs.com/
 
 module.exports = {
     name: 'transcript', // Coloque o nome do comando
-    description: 'Transcreva todas as mensagens deste canal para um arquivo html.', // Coloque a descrição do comando
+    description: '[ADMIN] Transcreva todas as mensagens deste canal para um arquivo html.', // Coloque a descrição do comando
     type: Discord.ApplicationCommandType.ChatInput,
     defaultMemberPermissions: PermissionFlagsBits.Administrator,
 

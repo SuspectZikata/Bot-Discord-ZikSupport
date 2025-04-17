@@ -3,7 +3,7 @@ const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 
 module.exports = {
   name: "setnick", // Coloque o nome do comando
-  description: "Configura o nickname do usuário no servidor.", // Coloque a descrição do comando
+  description: "[MOD] Configura o nickname do usuário no servidor.", // Coloque a descrição do comando
   type: Discord.ApplicationCommandType.ChatInput,
   defaultMemberPermissions: PermissionFlagsBits.ManageNicknames,
   options: [

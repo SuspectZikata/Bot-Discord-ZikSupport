@@ -1,78 +1,200 @@
-﻿# Bots-Discord
+﻿# 🤖 Bots-Discord
 
-## 🤖 Sobre o Bot
+![GitHub Repo stars](https://img.shields.io/github/stars/SuspectZikata/Bots-Discord?style=social)
+![GitHub forks](https://img.shields.io/github/forks/SuspectZikata/Bots-Discord?style=social)
+![License](https://img.shields.io/badge/licença-MIT-blue.svg)
 
-Este bot para Discord foi desenvolvido por **SuspectZikata** com o intuito de fornecer uma experiência aprimorada em servidores, incluindo recursos de administração, diversão e utilidade. Com diversas configurações ajustáveis diretamente via comandos, este bot elimina a necessidade de modificar o código para realizar ajustes!
+> Bot multifuncional para servidores Discord, com comandos de moderação, economia, formulários, sorteios, diversão e muito mais!
 
-## 🚀 Funcionalidades
+---
 
-### 🌏 Configuração
-- **⚙️ configbot** - Configura eventos, canais e outras opções do bot.
-- **🎯 contador** - Define a sala onde o contador de mensagens funcionará.
-- **🔄 resetcontador** - Reseta o contador.
-- **📊 setstatus** - Define o status do bot.
+## ✨ Destaques
+- 🎛️ Totalmente configurável via comandos
+- 🛡️ Moderação avançada
+- 🎁 Sistema de sorteios
+- 💰 Economia com ranking e inventário
+- 📋 Formulários personalizados
+- 🎨 Perfis com planos de fundo e cargos
+- 🐱 Comandos de diversão e utilidades
 
-### 🛠️ Administração
-- **🔗 antilink** - Remove mensagens contendo links.
-- **📢 anunciar** - Envia um anúncio em um canal especificado.
-- **🛠️ ban** - Bane um usuário do servidor.
-- **🧹 clear** - Limpa mensagens no canal.
-- **📨 dm** - Envia uma mensagem privada a um usuário.
-- **🗑  dmclear** - Limpa todas as mensagens do bot com um usuário.
-- **👢 kick** - Expulsa um usuário do servidor.
-- **🔒 lock** - Tranca um canal.
-- **🏃️ say** - Faz o bot enviar uma mensagem.
-- **✏️ setnick** - Define um apelido para um usuário.
-- **🐢 slowmode** - Define o modo lento em um canal.
-- **📝 transcript** - Gera um transcript de um canal.
-- **🔓 unban** - Remove o ban de um usuário.
-- **🔓 unlock** - Destranca um canal.
-- **💡 sugerir** - Envia uma sugestão.
-- **✅ verificação** - Configura a verificação de membros.
+---
 
-### 🎭 Diversão
-- **🤗 hug** - Abraça um usuário.
-- **😘 kiss** - Beija um usuário.
-- **👋 slap** - Dá um tapa em um usuário.
+## 🧠 Índice
+- [📜 Comandos](#-comandos)
+- [🧩 Dependências](#-dependências-packagejson)
+- [📌 Observações](#-observações)
+- [📝 Licença](#-licença)
 
-### 🔧 Utilidade
-- **🤖 botinfo** - Mostra informações sobre o bot.
-- **❓ help** - Exibe o painel de ajuda.
-- **🏟️ ping** - Mostra o ping do bot.
-- **📊 serverinfo** - Mostra informações sobre o servidor.
-- **👤 userinfo** - Mostra informações sobre um usuário.
+---
 
-## ⚡ Eventos
-- **antiLink** - Implementa a funcionalidade do comando `antilink`.
-- **autoCallJoin** - Faz o bot entrar automaticamente em uma call ao iniciar (configurável via `configbot`).
-- **autoRole** - Atribui um cargo automaticamente a novos membros (configurável via `configbot`).
-- **blockmessage** - Restringe o envio de mensagens em canais específicos, permitindo apenas imagens e vídeos (configurável via `configbot`).
-- **botMention** - Responde a menções ao bot.
-- **botOnline** - Mantém o status do bot mesmo após reiniciar.
-- **messageCreate** - Base do contador de mensagens (configurável via `configbot`).
-- **verificação** - Valida usuários ao usarem o comando de verificação.
+## 📜 Comandos
 
-## 📺 Dependências
+<details>
+<summary><strong>👑 Apenas Dono</strong></summary>
+
+| Comando | Descrição |
+|--------|-----------|
+| `add-itens` | Adiciona itens à base de dados (cargos e planos de fundo) |
+| `configbot` | Configura as opções gerais do bot |
+| `dar item` | Dá um item diretamente a um usuário |
+| `gerenciar-loja` | Gerencia os planos de fundo da loja |
+| `ordemcargos` | Define a ordem dos cargos no perfil |
+| `rem-itens` | Remove itens da base de dados |
+| `remover-item` | Remove item do inventário de um usuário |
+| `resetcontador` | Reseta a contagem numérica |
+| `setstatus` | Define o status do bot |
+
+</details>
+
+<details>
+<summary><strong>🛡️ Apenas Admin/Mod</strong></summary>
+
+| Comando | Descrição |
+|--------|-----------|
+| `anunciar` | Envia um anúncio no canal |
+| `ban` | Bane um usuário |
+| `boasvindas-config` | Configura mensagens de boas-vindas |
+| `contador` | Ativa o sistema de contagem |
+| `embed` | (Em desenvolvimento) |
+| `itens` | Lista todos os itens disponíveis |
+| `say` | O bot fala por você |
+| `sugerir` | Envia uma sugestão |
+| `transcript` | Gera um histórico do canal |
+| `unban` | Desbane um usuário |
+| `verificação` | Sistema de verificação de membros |
+
+</details>
+
+<details>
+<summary><strong>🌐 Comandos Discord</strong></summary>
+
+- `emoji-info` — Mostra informações detalhadas sobre um emoji
+
+</details>
+
+<details>
+<summary><strong>🎉 Diversão</strong></summary>
+
+- `cat` — Imagem aleatória de gato 🐱  
+- `dog` — Imagem aleatória de cachorro 🐶  
+- `hug` — Abraça um usuário  
+- `kiss` — Beija um usuário  
+- `slap` — Dá um tapa em um usuário  
+
+</details>
+
+<details>
+<summary><strong>💰 Economia</strong></summary>
+
+- `daily` — Recebe estrelas diárias  
+- `loja` — Visualiza planos de fundo disponíveis  
+- `ranking` — Ranking dos usuários com mais estrelas  
+- `saldo` — Mostra seu saldo atual  
+- `transferir` — Transfere estrelas para outro usuário (sem taxas)  
+
+</details>
+
+<details>
+<summary><strong>📋 Formulários</strong></summary>
+
+- `formconfig` — Cria ou edita formulários  
+- `formpanel` — Cria um painel de formulário  
+- `formquestions` — Gerencia perguntas do formulário  
+
+</details>
+
+<details>
+<summary><strong>🔨 Moderação</strong></summary>
+
+- `clear` — Limpa mensagens do canal  
+- `dm` — Envia DM para um usuário  
+- `dmclear` — Apaga DMs do bot para um usuário  
+- `kick` — Expulsa um usuário  
+- `lock` — Tranca o canal  
+- `setnick` — Altera apelido de um membro  
+- `slowmode` — Ativa o modo lento  
+- `unlock` — Destranca o canal  
+
+</details>
+
+<details>
+<summary><strong>🧍 Perfil</strong></summary>
+
+- `inventario` — Mostra seus itens comprados  
+- `perfil` — Exibe seu perfil com cargos e fundo  
+
+</details>
+
+<details>
+<summary><strong>🎁 Sorteios</strong></summary>
+
+- `sorteio-adiantar` — ⏩ Finaliza sorteio antecipadamente  
+- `sorteio-cancelar` — ❌ Cancela sorteio permanentemente  
+- `sorteio-criar` — 📝 Cria um novo sorteio  
+- `sorteio-enviar` — 📤 Publica sorteio criado  
+- `sorteio-listar` — 📋 Lista sorteios pendentes  
+
+</details>
+
+<details>
+<summary><strong>🧰 Utilitários</strong></summary>
+
+- `botinfo` — Informações sobre o bot  
+- `help` — Painel de ajuda  
+- `ping` — Latência do bot  
+- `serverinfo` — Info do servidor  
+- `userinfo` — Info de um usuário  
+
+</details>
+
+---
+
+## 🧩 Dependências (`package.json`)
+
 ```json
 {
+  "name": "bot-discord-zik",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js"
+  },
   "dependencies": {
     "@discordjs/voice": "^0.18.0",
+    "@napi-rs/canvas": "^0.1.69",
+    "axios": "^1.8.4",
     "better-sqlite3": "^11.8.1",
+    "canvas": "^3.1.0",
     "discord-html-transcripts": "^3.2.0",
     "discord.js": "^14.18.0",
     "fs": "^0.0.1-security",
+    "mongodb": "^6.15.0",
+    "mongoose": "^8.13.2",
     "ms": "^2.1.3",
-    "node-fetch": "^3.3.2"
+    "sharp": "^0.34.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
   }
 }
 ```
 
-## 🌜 Licença
-Este projeto foi desenvolvido por **SuspectZikata** e está sob uma licença aberta para uso e modificação conforme necessário.
+---
 
-## 🌟 Contribuição
-Se desejar contribuir, fique à vontade para abrir uma *issue* ou enviar um *pull request*!
+## 📌 Observações
+
+- 🔐 Comandos de administração e proprietário são restritos por permissões.
+- 🎨 Os perfis são customizáveis com planos de fundo e cargos.
+- 🧩 O sistema de formulários é dinâmico e personalizável.
+- 💸 Estrelas são a moeda principal e podem ser usadas na loja e sorteios.
 
 ---
-✨ **Mantenha seu servidor organizado, seguro e divertido com este bot!** ✨
 
+## 📝 Licença
+
+Este projeto está sob licença **MIT**. Sinta-se livre para usar, modificar e contribuir!
+
+---
+
+> Desenvolvido com ❤️ por **SuspectZikata**  
+> Mantenha seu servidor organizado, seguro e divertido com este bot! 🚀

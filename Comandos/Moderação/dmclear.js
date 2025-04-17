@@ -4,7 +4,7 @@ const client = require("../../index");
 
 module.exports = {
   name: "dmclear",
-  description: "Apaga todas as mensagens enviadas pelo bot para um usuário",
+  description: "[MOD] Apaga todas as mensagens enviadas pelo bot para um usuário",
   type: Discord.ApplicationCommandType.ChatInput,
   defaultMemberPermissions: PermissionFlagsBits.ManageGuild,
   options: [

@@ -5,7 +5,7 @@ const path = require("path");
 
 module.exports = {
   name: "verificação", // Coloque o nome do comando
-  description: "Ative o sistema de verificação.", // Coloque a descrição do comando
+  description: "[ADMIN] Ative o sistema de verificação.", // Coloque a descrição do comando
   type: Discord.ApplicationCommandType.ChatInput,
   defaultMemberPermissions: PermissionFlagsBits.Administrator,
   options: [

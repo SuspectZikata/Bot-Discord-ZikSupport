@@ -5,7 +5,7 @@ const config = require("../../config.json");
 
 module.exports = {
     name: "resetcontador",
-    description: "Reseta a contagem numérica para 0.",
+    description: "[ADMIN] Reseta a contagem numérica para 0.",
     defaultMemberPermissions: PermissionFlagsBits.Administrator,
     options: [],
 

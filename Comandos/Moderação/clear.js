@@ -3,7 +3,7 @@ const { PermissionFlagsBits, MessageFlags } = require("discord.js");
 
 module.exports = {
   name: "clear", // Coloque o nome do comando
-  description: "Limpe o canal de texto", // Coloque a descrição do comando
+  description: "[MOD] Limpe o canal de texto", // Coloque a descrição do comando
   type: Discord.ApplicationCommandType.ChatInput,
   defaultMemberPermissions: PermissionFlagsBits.ManageMessages,
   options: [

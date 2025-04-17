@@ -4,7 +4,7 @@ const ms = require("ms")
 
 module.exports = {
   name: "slowmode",
-  description: "Configure o modo lento em um canal de texto.",
+  description: "[MOD] Configure o modo lento em um canal de texto.",
   type: Discord.ApplicationCommandType.ChatInput,
   defaultMemberPermissions: PermissionFlagsBits.ManageChannels,
   options: [
