@@ -45,7 +45,7 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setColor('#FFD700')
       .setTitle(giveaway.title)
-      .setDescription(`**Prêmio:** ${giveaway.prize}\n\nClique no botão abaixo para participar!`)
+      .setDescription(`${giveaway.prize}\n\nClique no botão abaixo para participar!`)
       .addFields(
         { name: '⏳ Encerra em', value: `<t:${Math.floor(giveaway.endTime.getTime() / 1000)}:R>`, inline: true },
         { name: '🎁 Vencedores', value: `${giveaway.winnerCount}`, inline: true },

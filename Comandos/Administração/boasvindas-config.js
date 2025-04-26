@@ -55,13 +55,20 @@ module.exports = {
       flags: MessageFlags.Ephemeral
     });
 
-    // Coletor de interações
-    const collector = interaction.channel.createMessageComponentCollector({ 
+    // Cria um coletor para os botões
+    const buttonCollector = interaction.channel.createMessageComponentCollector({ 
       filter: i => i.user.id === interaction.user.id, 
       time: 60000 
     });
 
-    collector.on('collect', async i => {
+    // Cria um coletor para os modais (vinculado ao mesmo tempo do buttonCollector)
+    const modalCollector = interaction.channel.createModalSubmitCollector({
+      filter: i => i.user.id === interaction.user.id && i.customId.startsWith('config'),
+      time: 60000
+    });
+
+    // Manipulador de eventos para botões
+    buttonCollector.on('collect', async i => {
       try {
         if (i.customId === 'config_canal') {
           const modal = new ModalBuilder()
@@ -128,7 +135,48 @@ module.exports = {
       }
     });
 
-    // Função para gerar a imagem de boas-vindas (ATUALIZADA)
+    // Manipulador de eventos para modais
+    modalCollector.on('collect', async modalInteraction => {
+      try {
+        await modalInteraction.deferReply({ flags: MessageFlags.Ephemeral });
+
+        if (modalInteraction.customId === 'configCanalModal') {
+          config.boasVindas.canalId = modalInteraction.fields.getTextInputValue('canalInput');
+          saveConfig();
+          await modalInteraction.editReply({ content: '✅ Canal de boas-vindas configurado com sucesso!', flags: MessageFlags.Ephemeral });
+
+        } else if (modalInteraction.customId === 'configImagemModal') {
+          config.boasVindas.imagemFundo = modalInteraction.fields.getTextInputValue('imagemInput');
+          saveConfig();
+          await modalInteraction.editReply({ content: '✅ Imagem de fundo configurada com sucesso!', flags: MessageFlags.Ephemeral });
+
+        } else if (modalInteraction.customId === 'configMensagemModal') {
+          config.boasVindas.mensagem = modalInteraction.fields.getTextInputValue('mensagemInput');
+          saveConfig();
+          await modalInteraction.editReply({ content: '✅ Mensagem de boas-vindas configurada com sucesso!', flags: MessageFlags.Ephemeral });
+        }
+
+        // Atualiza a mensagem original
+        await interaction.editReply({
+          content: `**Configurações Atuais:**\n\n` +
+                   `📌 Canal: ${config.boasVindas.canalId ? `<#${config.boasVindas.canalId}>` : "Não configurado"}\n` +
+                   `🖼️ Imagem: [Clique para ver](${config.boasVindas.imagemFundo})\n` +
+                   `📝 Mensagem: \`${config.boasVindas.mensagem}\``,
+          components: [row]
+        });
+
+      } catch (error) {
+        console.error('Erro ao processar modal:', error);
+        await modalInteraction.editReply({ content: '❌ Ocorreu um erro ao salvar as configurações.', flags: MessageFlags.Ephemeral });
+      }
+    });
+
+    // Manipulador de eventos para quando o coletor terminar
+    buttonCollector.on('end', () => {
+      modalCollector.stop();
+    });
+
+    // Função para gerar a imagem de boas-vindas
     async function generateWelcomeImage(user) {
       // Carrega a imagem de fundo para obter suas dimensões
       const backgroundImg = await loadImage(config.boasVindas.imagemFundo);
@@ -208,69 +256,9 @@ module.exports = {
       return { attachment };
     }
 
-    // Função para quebrar texto em várias linhas
-    function wrapText(context, text, maxWidth, fontSize) {
-      const words = text.split(' ');
-      const lines = [];
-      let currentLine = words[0];
-
-      for (let i = 1; i < words.length; i++) {
-        const word = words[i];
-        const width = context.measureText(currentLine + ' ' + word).width;
-        if (width < maxWidth) {
-          currentLine += ' ' + word;
-        } else {
-          lines.push(currentLine);
-          currentLine = word;
-        }
-      }
-      lines.push(currentLine);
-      return lines;
-    }
-
     // Função para salvar configurações
     function saveConfig() {
       fs.writeFileSync(path.join(__dirname, '../../config.json'), JSON.stringify(config, null, 2));
     }
-
-    // Listener para modais
-    client.on('interactionCreate', async modalInteraction => {
-      if (!modalInteraction.isModalSubmit()) return;
-      if (!modalInteraction.customId.startsWith('config')) return;
-      if (modalInteraction.user.id !== interaction.user.id) return;
-
-      try {
-        await modalInteraction.deferReply({ flags: MessageFlags.Ephemeral });
-
-        if (modalInteraction.customId === 'configCanalModal') {
-          config.boasVindas.canalId = modalInteraction.fields.getTextInputValue('canalInput');
-          saveConfig();
-          await modalInteraction.editReply({ content: '✅ Canal de boas-vindas configurado com sucesso!', flags: MessageFlags.Ephemeral });
-
-        } else if (modalInteraction.customId === 'configImagemModal') {
-          config.boasVindas.imagemFundo = modalInteraction.fields.getTextInputValue('imagemInput');
-          saveConfig();
-          await modalInteraction.editReply({ content: '✅ Imagem de fundo configurada com sucesso!', flags: MessageFlags.Ephemeral });
-
-        } else if (modalInteraction.customId === 'configMensagemModal') {
-          config.boasVindas.mensagem = modalInteraction.fields.getTextInputValue('mensagemInput');
-          saveConfig();
-          await modalInteraction.editReply({ content: '✅ Mensagem de boas-vindas configurada com sucesso!', flags: MessageFlags.Ephemeral });
-        }
-
-        // Atualiza a mensagem original
-        await interaction.editReply({
-          content: `**Configurações Atuais:**\n\n` +
-                   `📌 Canal: ${config.boasVindas.canalId ? `<#${config.boasVindas.canalId}>` : "Não configurado"}\n` +
-                   `🖼️ Imagem: [Clique para ver](${config.boasVindas.imagemFundo})\n` +
-                   `📝 Mensagem: \`${config.boasVindas.mensagem}\``,
-          components: [row]
-        });
-
-      } catch (error) {
-        console.error('Erro ao processar modal:', error);
-        await modalInteraction.editReply({ content: '❌ Ocorreu um erro ao salvar as configurações.', flags: MessageFlags.Ephemeral });
-      }
-    });
   }
 };

@@ -1,7 +1,24 @@
 const Discord = require("discord.js");
-const { PermissionFlagsBits, MessageFlags } = require("discord.js");
+const { PermissionFlagsBits, MessageFlags, ActivityType } = require("discord.js");
 const fs = require('fs');
+const path = require('path');
 const config = require('../../config.json');
+
+// Status options with emojis and descriptions
+const STATUS_OPTIONS = [
+    { emoji: "🟢", name: "online", label: "Online", description: "Mostra que o bot está online e ativo" },
+    { emoji: "🔴", name: "dnd", label: "Não Perturbe", description: "Mostra que o bot está ocupado" },
+    { emoji: "🟡", name: "idle", label: "Ausente", description: "Mostra que o bot está ausente" },
+    { emoji: "⚫", name: "invisible", label: "Invisível", description: "Oculta o status do bot" }
+];
+
+// Activity type options
+const ACTIVITY_TYPES = [
+    { name: ActivityType.Playing, label: "Jogando" },
+    { name: ActivityType.Listening, label: "Ouvindo" },
+    { name: ActivityType.Watching, label: "Assistindo" },
+    { name: ActivityType.Competing, label: "Competindo em" }
+];
 
 // Função para atualizar o status do bot
 async function updateBotStatus(client, statusConfig) {
@@ -10,13 +27,13 @@ async function updateBotStatus(client, statusConfig) {
             status: statusConfig.status,
             activities: [{
                 name: statusConfig.description || 'Nenhuma descrição',
-                type: parseInt(statusConfig.activityType)
+                type: statusConfig.activityType
             }]
         });
 
         // Salva no config.json para persistência
         config.status = { ...statusConfig };
-        fs.writeFileSync('./config.json', JSON.stringify(config, null, 2));
+        fs.writeFileSync(path.join(__dirname, '../../config.json'), JSON.stringify(config, null, 2));
         
         return true;
     } catch (error) {
@@ -33,37 +50,20 @@ module.exports = {
     options: [],
 
     run: async (client, interaction) => {
-
-        // Status options with emojis and descriptions
-        const statusOptions = [
-            { emoji: "🟢", name: "online", label: "Online", description: "Mostra que o bot está online e ativo" },
-            { emoji: "🔴", name: "dnd", label: "Não Perturbe", description: "Mostra que o bot está ocupado" },
-            { emoji: "🟡", name: "idle", label: "Ausente", description: "Mostra que o bot está ausente" },
-            { emoji: "⚫", name: "invisible", label: "Invisível", description: "Oculta o status do bot" }
-        ];
-
-        // Activity type options
-        const activityTypes = [
-            { name: Discord.ActivityType.Playing, label: "Jogando" },
-            { name: Discord.ActivityType.Listening, label: "Ouvindo" },
-            { name: Discord.ActivityType.Watching, label: "Assistindo" },
-            { name: Discord.ActivityType.Competing, label: "Competindo em" }
-        ];
-
         // Carrega o status atual do config ou usa valores padrão
         let newStatus = {
             status: config.status?.status || 'online',
-            activityType: config.status?.activityType || 0,
+            activityType: config.status?.activityType || ActivityType.Playing,
             description: config.status?.description || ''
         };
 
+        // Função para criar os componentes da mensagem
         function createComponents() {
-            // Create status selection menu
             const statusMenu = new Discord.StringSelectMenuBuilder()
                 .setCustomId('status_select')
                 .setPlaceholder('Selecione o status')
                 .addOptions(
-                    statusOptions.map(status => ({
+                    STATUS_OPTIONS.map(status => ({
                         label: status.label,
                         description: status.description,
                         value: status.name,
@@ -72,19 +72,17 @@ module.exports = {
                     }))
                 );
 
-            // Create activity type selection menu
             const activityTypeMenu = new Discord.StringSelectMenuBuilder()
                 .setCustomId('activity_type_select')
                 .setPlaceholder('Selecione o tipo de atividade')
                 .addOptions(
-                    activityTypes.map(type => ({
+                    ACTIVITY_TYPES.map(type => ({
                         label: type.label,
                         value: type.name.toString(),
                         default: type.name === newStatus.activityType
                     }))
                 );
 
-            // Create buttons
             const editDescriptionButton = new Discord.ButtonBuilder()
                 .setCustomId('edit_description')
                 .setLabel('Editar Descrição')
@@ -97,7 +95,6 @@ module.exports = {
                 .setStyle(Discord.ButtonStyle.Success)
                 .setEmoji('💾');
 
-            // Create action rows
             const statusRow = new Discord.ActionRowBuilder().addComponents(statusMenu);
             const activityTypeRow = new Discord.ActionRowBuilder().addComponents(activityTypeMenu);
             const buttonRow = new Discord.ActionRowBuilder().addComponents(editDescriptionButton, saveButton);
@@ -105,6 +102,7 @@ module.exports = {
             return [statusRow, activityTypeRow, buttonRow];
         }
 
+        // Função para criar o embed da mensagem
         function createEmbed() {
             return new Discord.EmbedBuilder()
                 .setColor("Blue")
@@ -113,11 +111,11 @@ module.exports = {
                 .addFields(
                     { 
                         name: "Status Atual", 
-                        value: `${statusOptions.find(s => s.name === newStatus.status)?.emoji || '🟢'} ${newStatus.status}`
+                        value: `${STATUS_OPTIONS.find(s => s.name === newStatus.status)?.emoji || '🟢'} ${newStatus.status}`
                     },
                     { 
                         name: "Tipo de Atividade", 
-                        value: activityTypes.find(t => t.name === newStatus.activityType)?.label || 'Jogando'
+                        value: ACTIVITY_TYPES.find(t => t.name === newStatus.activityType)?.label || 'Jogando'
                     },
                     { 
                         name: "Descrição", 
@@ -126,7 +124,7 @@ module.exports = {
                 );
         }
 
-        // Send initial message
+        // Envia a mensagem inicial
         await interaction.reply({ 
             embeds: [createEmbed()], 
             components: createComponents(),
@@ -135,12 +133,18 @@ module.exports = {
 
         const message = await interaction.fetchReply();
 
-        // Create collector for interactions
-        const collector = message.createMessageComponentCollector({ 
-            time: 300000 // 5 minutes
+        // Cria um coletor para os componentes da mensagem
+        const componentCollector = message.createMessageComponentCollector({ 
+            time: 300000 // 5 minutos
         });
 
-        collector.on('collect', async i => {
+        // Cria um coletor para os modais (com o mesmo tempo de vida)
+        const modalCollector = message.createModalSubmitCollector({
+            time: 300000
+        });
+
+        // Manipulador de eventos para componentes
+        componentCollector.on('collect', async i => {
             if (i.user.id !== interaction.user.id) {
                 await i.reply({ 
                     content: 'Você não pode usar estes controles.', 
@@ -207,12 +211,8 @@ module.exports = {
             }
         });
 
-        // Handle modal submit
-        const modalHandler = async (modalInteraction) => {
-            if (!modalInteraction.isModalSubmit()) return;
-            if (modalInteraction.customId !== 'description_modal') return;
-            if (modalInteraction.user.id !== interaction.user.id) return;
-
+        // Manipulador de eventos para modais
+        modalCollector.on('collect', async modalInteraction => {
             try {
                 await modalInteraction.deferUpdate();
                 newStatus.description = modalInteraction.fields.getTextInputValue('description_input');
@@ -229,20 +229,18 @@ module.exports = {
                     flags: MessageFlags.Ephemeral
                 }).catch(console.error);
             }
-        };
+        });
 
-        // Add modal handler
-        client.on('interactionCreate', modalHandler);
-
-        // When collector ends
-        collector.on('end', () => {
+        // Quando o coletor terminar
+        componentCollector.on('end', () => {
             try {
+                // Remove os componentes da mensagem
                 interaction.editReply({ 
                     components: [] 
                 }).catch(() => {});
                 
-                // Remove the modal handler
-                client.removeListener('interactionCreate', modalHandler);
+                // Para o coletor de modais
+                modalCollector.stop();
             } catch (error) {
                 console.error('Erro ao finalizar coletor:', error);
             }

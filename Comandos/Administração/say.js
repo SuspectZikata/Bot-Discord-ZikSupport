@@ -8,7 +8,6 @@ module.exports = {
   defaultMemberPermissions: PermissionFlagsBits.Administrator,
 
   run: async (client, interaction) => {
-
     // Criação dos botões de seleção
     const buttons = new Discord.ActionRowBuilder().addComponents(
       new Discord.ButtonBuilder()
@@ -26,23 +25,27 @@ module.exports = {
     await interaction.reply({
       content: 'Selecione o tipo de mensagem:',
       components: [buttons],
-      flags: MessageFlags.Ephemeral,
+      flags: MessageFlags.Ephemeral
     });
 
-    // Coletor de interações
+    const reply = await interaction.fetchReply();
+
+    // Coletor de interações na mensagem de resposta
     const filter = i => i.user.id === interaction.user.id;
-    const collector = interaction.channel.createMessageComponentCollector({ 
+    const collector = reply.createMessageComponentCollector({ 
       filter, 
-      time: 60000 
+      time: 60000,
+      max: 1 // Aceita apenas uma interação
     });
 
     collector.on('collect', async i => {
       if (i.customId === 'normal' || i.customId === 'embed') {
         // Cria o modal
         const modal = new Discord.ModalBuilder()
-          .setCustomId(`sayModal_${i.customId}`)
+          .setCustomId(`sayModal_${i.customId}_${i.id}`) // ID único
           .setTitle("Enviar Mensagem");
 
+        // Mensagem input
         const messageInput = new Discord.TextInputBuilder()
           .setCustomId("message")
           .setLabel("Mensagem")
@@ -50,56 +53,97 @@ module.exports = {
           .setPlaceholder("Digite sua mensagem aqui")
           .setRequired(true);
 
-        const actionRow = new Discord.ActionRowBuilder().addComponents(
-          messageInput
-        );
+        // Canal input
+        const channelInput = new Discord.TextInputBuilder()
+          .setCustomId("channel")
+          .setLabel("Canal (opcional)")
+          .setStyle(Discord.TextInputStyle.Short)
+          .setPlaceholder("ID do canal ou mencione o canal")
+          .setRequired(false);
 
-        modal.setComponents(actionRow);
+        // Criar ActionRows separados
+        const firstActionRow = new Discord.ActionRowBuilder().addComponents(messageInput);
+        const secondActionRow = new Discord.ActionRowBuilder().addComponents(channelInput);
 
-        await i.showModal(modal);
+        modal.addComponents(firstActionRow, secondActionRow);
 
-        // Aguarda a resposta do modal
         try {
+          await i.showModal(modal);
+          
+          // Aguarda a resposta do modal
+          const modalFilter = mi => mi.customId === `sayModal_${i.customId}_${i.id}`;
           const modalInteraction = await i.awaitModalSubmit({
-            filter: mi => mi.customId === `sayModal_${i.customId}`,
+            filter: modalFilter,
             time: 60000
-          });
+          }).catch(() => null);
 
-          // Finaliza o collector
-          collector.stop();
+          if (!modalInteraction) {
+            return i.followUp({
+              content: 'Tempo esgotado para enviar a mensagem!',
+              flags: MessageFlags.Ephemeral
+            }).catch(() => {});
+          }
 
           const message = modalInteraction.fields.getTextInputValue("message");
+          const channelInputValue = modalInteraction.fields.getTextInputValue("channel");
+
+          let targetChannel = interaction.channel;
+
+          if (channelInputValue) {
+            try {
+              // Extrai ID do canal se for uma menção
+              const channelId = channelInputValue.replace(/[<#>]/g, '');
+              const channel = await client.channels.fetch(channelId);
+              if (channel) targetChannel = channel;
+            } catch (error) {
+              console.error("Erro ao buscar canal:", error);
+              return modalInteraction.reply({ 
+                content: 'Canal inválido! Mensagem será enviada no canal atual.', 
+                flags: MessageFlags.Ephemeral
+              }).catch(() => {});
+            }
+          }
 
           if (i.customId === 'embed') {
             const embed = new Discord.EmbedBuilder()
               .setColor("Blue")
-              .setAuthor({ name: i.user.username, iconURL: i.user.displayAvatarURL({ dynamic: true }) })
+              .setAuthor({ 
+                name: interaction.user.username, 
+                iconURL: interaction.user.displayAvatarURL({ dynamic: true }) 
+              })
               .setDescription(message);
 
-            if (!modalInteraction.replied) {
-              await modalInteraction.reply({ embeds: [embed] });
-            }
+            await targetChannel.send({ embeds: [embed] });
           } else {
-            if (!modalInteraction.replied) {
-              await modalInteraction.reply({ content: message });
-            }
+            await targetChannel.send({ content: message });
           }
+
+          // Verifica se já foi respondido
+          if (!modalInteraction.replied) {
+            await modalInteraction.reply({ 
+              content: 'Mensagem enviada com sucesso!', 
+              flags: MessageFlags.Ephemeral
+            }).catch(() => {});
+          }
+          
         } catch (error) {
-          console.error('Erro ao processar modal:', error);
-          if (!i.replied) {
-            await i.reply({ content: 'Ocorreu um erro ao processar sua mensagem!', flags: MessageFlags.Ephemeral, });
+          console.error('Erro no modal:', error);
+          if (!i.replied && !i.deferred) {
+            await i.followUp({ 
+              content: 'Ocorreu um erro ao processar sua mensagem!', 
+              flags: MessageFlags.Ephemeral
+            }).catch(() => {});
           }
-          collector.stop();
         }
       }
     });
 
-    collector.on('end', collected => {
-      if (collected.size === 0) {
+    collector.on('end', (collected, reason) => {
+      if (reason === 'time') {
         interaction.editReply({
           content: 'Tempo esgotado!',
           components: []
-        });
+        }).catch(() => {});
       }
     });
   },

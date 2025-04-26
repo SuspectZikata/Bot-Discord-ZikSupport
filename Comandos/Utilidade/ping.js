@@ -1,4 +1,5 @@
 const Discord = require("discord.js")
+const { MessageFlags } = require('discord.js');
 
 module.exports = {
   name: "ping",
@@ -6,11 +7,12 @@ module.exports = {
   type: Discord.ApplicationCommandType.ChatInput,
 
   run: async (client, interaction) => {
-    const sent = await interaction.reply({ 
+    await interaction.reply({ 
       content: "📡 Calculando ping...", 
-      flags: MessageFlags.Ephemeral,
-      fetchReply: true 
+      flags: MessageFlags.Ephemeral 
     });
+
+    const sent = await interaction.fetchReply();
 
     const pingEmbed = new Discord.EmbedBuilder()
       .setColor("#2b2d31")

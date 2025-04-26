@@ -1,4 +1,10 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags } = require('discord.js');
+const {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  MessageFlags
+} = require('discord.js');
 const { Background, UserInventory } = require('../../models/ShopItems');
 const User = require('../../models/User');
 
@@ -11,7 +17,7 @@ module.exports = {
     try {
       const items = await Background.find({ availableInShop: true }).sort({ price: 1 });
 
-      if (items.length === 0) {
+      if (!items.length) {
         return interaction.reply({
           content: '❌ Não há planos de fundo disponíveis na loja no momento!',
           flags: MessageFlags.Ephemeral
@@ -20,19 +26,17 @@ module.exports = {
 
       let currentIndex = 0;
 
-      const createItemEmbed = (index) => {
+      const getItemEmbed = (index) => {
         const item = items[index];
         return new EmbedBuilder()
           .setColor('#EB459E')
           .setTitle(item.name)
           .setDescription(`**Preço:** ${item.price} estrelas`)
           .setImage(item.imageUrl)
-          .setFooter({
-            text: `Item ${index + 1} de ${items.length} | Plano de Fundo`
-          });
+          .setFooter({ text: `Item ${index + 1} de ${items.length} | Plano de Fundo` });
       };
 
-      const createButtons = (index) => {
+      const getNavigationButtons = (index) => {
         return new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId('prev')
@@ -52,13 +56,12 @@ module.exports = {
       };
 
       await interaction.reply({
-        embeds: [createItemEmbed(currentIndex)],
-        components: [createButtons(currentIndex)]
+        embeds: [getItemEmbed(currentIndex)],
+        components: [getNavigationButtons(currentIndex)]
       });
 
       const message = await interaction.fetchReply();
-
-      const collector = message.createMessageComponentCollector({ time: 300000 });
+      const collector = message.createMessageComponentCollector({ time: 5 * 60 * 1000 });
 
       collector.on('collect', async (i) => {
         if (i.user.id !== interaction.user.id) {
@@ -68,40 +71,29 @@ module.exports = {
           });
         }
 
+        const item = items[currentIndex];
+
         switch (i.customId) {
           case 'prev':
-            currentIndex--;
-            await i.update({
-              embeds: [createItemEmbed(currentIndex)],
-              components: [createButtons(currentIndex)]
+            currentIndex = Math.max(0, currentIndex - 1);
+            return i.update({
+              embeds: [getItemEmbed(currentIndex)],
+              components: [getNavigationButtons(currentIndex)]
             });
-            break;
 
           case 'next':
-            currentIndex++;
-            await i.update({
-              embeds: [createItemEmbed(currentIndex)],
-              components: [createButtons(currentIndex)]
+            currentIndex = Math.min(items.length - 1, currentIndex + 1);
+            return i.update({
+              embeds: [getItemEmbed(currentIndex)],
+              components: [getNavigationButtons(currentIndex)]
             });
-            break;
 
           case 'buy':
             try {
-              const item = items[currentIndex];
-
-              let user = await User.findOne({ userId: i.user.id });
-              if (!user) {
-                user = new User({ userId: i.user.id, stars: 0 });
-                await user.save();
-              }
-
-              let inventory = await UserInventory.findOne({ userId: i.user.id });
-              if (!inventory) {
-                inventory = new UserInventory({ userId: i.user.id });
-              }
+              let user = await User.findOne({ userId: i.user.id }) || new User({ userId: i.user.id, stars: 0 });
+              let inventory = await UserInventory.findOne({ userId: i.user.id }) || new UserInventory({ userId: i.user.id });
 
               const alreadyOwned = inventory.ownedBackgrounds.includes(item._id);
-
               if (alreadyOwned) {
                 return i.reply({
                   content: '❌ Você já possui este plano de fundo!',
@@ -111,52 +103,49 @@ module.exports = {
 
               if (user.stars < item.price) {
                 return i.reply({
-                  content: `❌ Saldo insuficiente! Você precisa de mais ${item.price - user.stars} estrelas.`,
+                  content: `❌ Saldo insuficiente! Faltam ${item.price - user.stars} estrelas.`,
                   flags: MessageFlags.Ephemeral
                 });
               }
 
               user.stars -= item.price;
-              await user.save();
-
               inventory.ownedBackgrounds.push(item._id);
-              await inventory.save();
 
-              await i.reply({
+              await Promise.all([user.save(), inventory.save()]);
+
+              return i.reply({
                 content: `✅ Você comprou **${item.name}** por ${item.price} estrelas!\nSeu novo saldo: ${user.stars} estrelas`,
                 flags: MessageFlags.Ephemeral
               });
 
             } catch (error) {
               console.error('Erro na compra:', error);
-              await i.reply({
+              return i.reply({
                 content: '❌ Ocorreu um erro ao processar sua compra!',
                 flags: MessageFlags.Ephemeral
               });
             }
-            break;
         }
       });
-      
+
       collector.on('end', async () => {
         try {
           await message.edit({ components: [] });
         } catch (error) {
-          // Silencia completamente qualquer erro de edição
           if (error.code !== 10008) {
-            // Se quiser rastrear erros diferentes de "Unknown Message", pode logar de leve:
             // console.warn('Erro inesperado ao encerrar collector:', error.message);
           }
-          // Se for erro 10008 (mensagem deletada), apenas ignora
         }
       });
 
     } catch (error) {
       console.error('Erro no comando loja:', error);
-      await interaction.reply({
-        content: '❌ Ocorreu um erro ao carregar a loja!',
-        flags: MessageFlags.Ephemeral
-      });
+      if (!interaction.replied) {
+        await interaction.reply({
+          content: '❌ Ocorreu um erro ao carregar a loja!',
+          flags: MessageFlags.Ephemeral
+        });
+      }
     }
   }
 };

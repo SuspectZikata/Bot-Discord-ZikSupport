@@ -24,8 +24,8 @@
   },
   "verificationRoleId": "",
   "boasVindas": {
-    "canalId": "1359656674411151481",
-    "imagemFundo": "https://raw.githubusercontent.com/SuspectZikata/Imagens-ZikBot/refs/heads/main/ZikGuild/BoasVindasGuild.png",
+    "canalId": "",
+    "imagemFundo": "",
     "mensagem": "Bem-vindo(a) ao servidor!"
   }
 }

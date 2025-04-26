@@ -93,6 +93,7 @@ async function startBot() {
 
     // Carregar comandos
     client.slashCommands = new Discord.Collection();
+    client.slashCommands.clear?.();
     require("./handler")(client);
 
     // Configurações do bot
