@@ -6,145 +6,98 @@ module.exports = {
   description: "[ADMIN] Faça eu falar",
   type: Discord.ApplicationCommandType.ChatInput,
   defaultMemberPermissions: PermissionFlagsBits.Administrator,
+  options: [
+    {
+      name: "tipo",
+      description: "Tipo de mensagem",
+      type: Discord.ApplicationCommandOptionType.String,
+      required: true,
+      choices: [
+        { name: "Mensagem Normal", value: "normal" },
+        { name: "Mensagem Embed", value: "embed" }
+      ]
+    },
+    {
+      name: "canal",
+      description: "Canal para enviar (opcional)",
+      type: Discord.ApplicationCommandOptionType.Channel,
+      required: false,
+      channel_types: [Discord.ChannelType.GuildText]
+    }
+  ],
 
   run: async (client, interaction) => {
-    // Criação dos botões de seleção
-    const buttons = new Discord.ActionRowBuilder().addComponents(
-      new Discord.ButtonBuilder()
-        .setCustomId('normal')
-        .setLabel('Mensagem Normal')
-        .setStyle(Discord.ButtonStyle.Primary)
-        .setEmoji('📄'),
-      new Discord.ButtonBuilder()
-        .setCustomId('embed')
-        .setLabel('Mensagem Embed')
-        .setStyle(Discord.ButtonStyle.Secondary)
-        .setEmoji('🖼️')
-    );
+    try {
+      const tipo = interaction.options.getString("tipo");
+      const canalOption = interaction.options.getChannel("canal");
 
-    await interaction.reply({
-      content: 'Selecione o tipo de mensagem:',
-      components: [buttons],
-      flags: MessageFlags.Ephemeral
-    });
+      // Cria o modal para a mensagem
+      const modal = new Discord.ModalBuilder()
+        .setCustomId(`sayModal_${tipo}_${canalOption?.id || "current"}`)
+        .setTitle("Digite sua mensagem");
 
-    const reply = await interaction.fetchReply();
+      // Campo de mensagem
+      const messageInput = new Discord.TextInputBuilder()
+        .setCustomId("messageInput")
+        .setLabel("Conteúdo da mensagem")
+        .setStyle(Discord.TextInputStyle.Paragraph)
+        .setRequired(true);
 
-    // Coletor de interações na mensagem de resposta
-    const filter = i => i.user.id === interaction.user.id;
-    const collector = reply.createMessageComponentCollector({ 
-      filter, 
-      time: 60000,
-      max: 1 // Aceita apenas uma interação
-    });
+      const actionRow = new Discord.ActionRowBuilder().addComponents(messageInput);
+      modal.addComponents(actionRow);
 
-    collector.on('collect', async i => {
-      if (i.customId === 'normal' || i.customId === 'embed') {
-        // Cria o modal
-        const modal = new Discord.ModalBuilder()
-          .setCustomId(`sayModal_${i.customId}_${i.id}`) // ID único
-          .setTitle("Enviar Mensagem");
+      await interaction.showModal(modal);
 
-        // Mensagem input
-        const messageInput = new Discord.TextInputBuilder()
-          .setCustomId("message")
-          .setLabel("Mensagem")
-          .setStyle(Discord.TextInputStyle.Paragraph)
-          .setPlaceholder("Digite sua mensagem aqui")
-          .setRequired(true);
+      // Captura a submissão do modal
+      const filter = (interaction) => interaction.customId.startsWith('sayModal_');
+      interaction.awaitModalSubmit({ filter, time: 60000 })
+        .then(async modalInteraction => {
+          const messageContent = modalInteraction.fields.getTextInputValue("messageInput");
+          const targetChannel = canalOption || modalInteraction.channel;
 
-        // Canal input
-        const channelInput = new Discord.TextInputBuilder()
-          .setCustomId("channel")
-          .setLabel("Canal (opcional)")
-          .setStyle(Discord.TextInputStyle.Short)
-          .setPlaceholder("ID do canal ou mencione o canal")
-          .setRequired(false);
-
-        // Criar ActionRows separados
-        const firstActionRow = new Discord.ActionRowBuilder().addComponents(messageInput);
-        const secondActionRow = new Discord.ActionRowBuilder().addComponents(channelInput);
-
-        modal.addComponents(firstActionRow, secondActionRow);
-
-        try {
-          await i.showModal(modal);
-          
-          // Aguarda a resposta do modal
-          const modalFilter = mi => mi.customId === `sayModal_${i.customId}_${i.id}`;
-          const modalInteraction = await i.awaitModalSubmit({
-            filter: modalFilter,
-            time: 60000
-          }).catch(() => null);
-
-          if (!modalInteraction) {
-            return i.followUp({
-              content: 'Tempo esgotado para enviar a mensagem!',
+          // Verifica se o canal é válido
+          if (!targetChannel || targetChannel.type !== Discord.ChannelType.GuildText) {
+            return modalInteraction.reply({
+              content: "❌ Canal inválido!",
               flags: MessageFlags.Ephemeral
-            }).catch(() => {});
+            });
           }
 
-          const message = modalInteraction.fields.getTextInputValue("message");
-          const channelInputValue = modalInteraction.fields.getTextInputValue("channel");
-
-          let targetChannel = interaction.channel;
-
-          if (channelInputValue) {
-            try {
-              // Extrai ID do canal se for uma menção
-              const channelId = channelInputValue.replace(/[<#>]/g, '');
-              const channel = await client.channels.fetch(channelId);
-              if (channel) targetChannel = channel;
-            } catch (error) {
-              console.error("Erro ao buscar canal:", error);
-              return modalInteraction.reply({ 
-                content: 'Canal inválido! Mensagem será enviada no canal atual.', 
-                flags: MessageFlags.Ephemeral
-              }).catch(() => {});
-            }
-          }
-
-          if (i.customId === 'embed') {
+          // Envia a mensagem conforme o tipo
+          if (tipo === "embed") {
             const embed = new Discord.EmbedBuilder()
               .setColor("Blue")
-              .setAuthor({ 
-                name: interaction.user.username, 
-                iconURL: interaction.user.displayAvatarURL({ dynamic: true }) 
+              .setAuthor({
+                name: modalInteraction.user.username,
+                iconURL: modalInteraction.user.displayAvatarURL({ dynamic: true })
               })
-              .setDescription(message);
+              .setDescription(messageContent)
+              .setTimestamp();
 
             await targetChannel.send({ embeds: [embed] });
           } else {
-            await targetChannel.send({ content: message });
+            await targetChannel.send({ content: messageContent });
           }
 
-          // Verifica se já foi respondido
-          if (!modalInteraction.replied) {
-            await modalInteraction.reply({ 
-              content: 'Mensagem enviada com sucesso!', 
-              flags: MessageFlags.Ephemeral
-            }).catch(() => {});
-          }
-          
-        } catch (error) {
-          console.error('Erro no modal:', error);
-          if (!i.replied && !i.deferred) {
-            await i.followUp({ 
-              content: 'Ocorreu um erro ao processar sua mensagem!', 
-              flags: MessageFlags.Ephemeral
-            }).catch(() => {});
-          }
-        }
-      }
-    });
+          await modalInteraction.reply({
+            content: `✅ Mensagem enviada com sucesso em ${targetChannel}!`,
+            flags: MessageFlags.Ephemeral
+          });
+        })
+        .catch(() => {
+          // Tempo esgotado ou erro
+          interaction.followUp({
+            content: "❌ Tempo esgotado para enviar a mensagem!",
+            flags: MessageFlags.Ephemeral
+          });
+        });
 
-    collector.on('end', (collected, reason) => {
-      if (reason === 'time') {
-        interaction.editReply({
-          content: 'Tempo esgotado!',
-          components: []
-        }).catch(() => {});
-      }
-    });
-  },
+    } catch (error) {
+      console.error("Erro no comando say:", error);
+      await interaction.reply({
+        content: "❌ Ocorreu um erro ao processar o comando!",
+        flags: MessageFlags.Ephemeral
+      });
+    }
+  }
 };
