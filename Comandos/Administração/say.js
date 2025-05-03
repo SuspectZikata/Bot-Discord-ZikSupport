@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const { PermissionFlagsBits, MessageFlags } = require("discord.js");
+const { PermissionFlagsBits, MessageFlags, ChannelType } = require("discord.js");
 
 module.exports = {
   name: "say",
@@ -22,7 +22,12 @@ module.exports = {
       description: "Canal para enviar (opcional)",
       type: Discord.ApplicationCommandOptionType.Channel,
       required: false,
-      channel_types: [Discord.ChannelType.GuildText]
+      channel_types: [
+        ChannelType.GuildText,
+        ChannelType.GuildAnnouncement,
+        ChannelType.GuildForum,
+        ChannelType.GuildStageVoice
+      ]
     }
   ],
 
@@ -31,12 +36,10 @@ module.exports = {
       const tipo = interaction.options.getString("tipo");
       const canalOption = interaction.options.getChannel("canal");
 
-      // Cria o modal para a mensagem
       const modal = new Discord.ModalBuilder()
         .setCustomId(`sayModal_${tipo}_${canalOption?.id || "current"}`)
         .setTitle("Digite sua mensagem");
 
-      // Campo de mensagem
       const messageInput = new Discord.TextInputBuilder()
         .setCustomId("messageInput")
         .setLabel("Conteúdo da mensagem")
@@ -48,22 +51,49 @@ module.exports = {
 
       await interaction.showModal(modal);
 
-      // Captura a submissão do modal
-      const filter = (interaction) => interaction.customId.startsWith('sayModal_');
+      const filter = i => i.customId.startsWith('sayModal_');
       interaction.awaitModalSubmit({ filter, time: 60000 })
         .then(async modalInteraction => {
           const messageContent = modalInteraction.fields.getTextInputValue("messageInput");
-          const targetChannel = canalOption || modalInteraction.channel;
+          let targetChannel = canalOption || modalInteraction.channel;
 
-          // Verifica se o canal é válido
-          if (!targetChannel || targetChannel.type !== Discord.ChannelType.GuildText) {
+          // Ajuste especial para Stage (palco)
+          if (targetChannel.type === ChannelType.GuildStageVoice) {
+            const textLinked = targetChannel.guild.channels.cache.find(
+              c => c.type === ChannelType.GuildText && targetChannel.id === c.parentId
+            );
+            if (!textLinked) {
+              return modalInteraction.reply({
+                content: "❌ O canal de palco não possui um canal de texto vinculado.",
+                flags: MessageFlags.Ephemeral
+              });
+            }
+            targetChannel = textLinked;
+          }
+
+          // Fórum requer criação de thread
+          if (targetChannel.type === ChannelType.GuildForum) {
+            const thread = await targetChannel.threads.create({
+              name: `Mensagem de ${modalInteraction.user.username}`,
+              message: tipo === "embed"
+                ? { embeds: [new Discord.EmbedBuilder()
+                    .setColor("Blue")
+                    .setAuthor({
+                      name: modalInteraction.user.username,
+                      iconURL: modalInteraction.user.displayAvatarURL({ dynamic: true })
+                    })
+                    .setDescription(messageContent)
+                    .setTimestamp()] }
+                : { content: messageContent }
+            });
+
             return modalInteraction.reply({
-              content: "❌ Canal inválido!",
+              content: `✅ Mensagem enviada com sucesso no fórum: ${thread.toString()}`,
               flags: MessageFlags.Ephemeral
             });
           }
 
-          // Envia a mensagem conforme o tipo
+          // Envio padrão
           if (tipo === "embed") {
             const embed = new Discord.EmbedBuilder()
               .setColor("Blue")
@@ -83,9 +113,8 @@ module.exports = {
             content: `✅ Mensagem enviada com sucesso em ${targetChannel}!`,
             flags: MessageFlags.Ephemeral
           });
-        })
-        .catch(() => {
-          // Tempo esgotado ou erro
+
+        }).catch(() => {
           interaction.followUp({
             content: "❌ Tempo esgotado para enviar a mensagem!",
             flags: MessageFlags.Ephemeral
